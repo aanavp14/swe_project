@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My trips — RoadMapper</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="bg-gray-100 font-sans text-gray-900 antialiased min-h-screen">
+  <div class="flex h-1.5 w-full">
+    <div class="flex-1 bg-[#007FAF]"></div>
+    <div class="flex-1 bg-[#426F42]"></div>
+    <div class="flex-1 bg-[#F48F00]"></div>
+  </div>
+  <header class="py-6 text-center">
+    <h1 class="text-4xl font-bold tracking-tight text-gray-900 m-0">
+      <a href="/" class="roadmapper-gradient no-underline hover:opacity-80">RoadMapper</a>
+    </h1>
+    <nav class="mt-2 text-sm text-gray-600">
+      <span>{{ current_user.email }}</span>
+      <span class="mx-2">&middot;</span>
+      <a href="{{ url_for('auth.logout') }}" class="text-[#007FAF] hover:underline font-medium">Log out</a>
+    </nav>
+  </header>
+  <main class="max-w-3xl mx-auto mb-10 bg-white p-8 rounded-md shadow-md border-t-4 border-[#007FAF]">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">My trips</h2>
+    <div class="flex border-b border-gray-200 mb-6">
+      <button type="button" id="tab-created" class="tab-btn px-4 py-2 font-semibold text-[#007FAF] border-b-2 border-[#007FAF] -mb-px">Trips I created</button>
+      <button type="button" id="tab-joined" class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700 -mb-px">Trips I joined</button>
+    </div>
+    <div id="panel-created" class="tab-panel">
+      {% if created_trips %}
+      <ul class="space-y-3 list-none p-0 m-0">
+        {% for trip in created_trips %}
+        <li class="trip-item flex items-center gap-2 p-4 border border-gray-200 rounded-sm hover:bg-gray-50 hover:border-[#007FAF] transition-colors">
+          <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 min-w-0">
+            <span class="font-bold text-gray-900">{{ trip.name }}</span>
+            <span class="text-gray-600 ml-2">{{ trip.origin }} → {{ trip.destination }}</span>
+          </a>
+          <button type="button" class="delete-trip-btn shrink-0 px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-sm hover:bg-red-50" data-code="{{ trip.invite_code }}" title="Delete trip">Delete</button>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-gray-600">You haven't created any trips yet.</p>
+      <a href="/create" class="inline-block mt-4 bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Create your first trip</a>
+      {% endif %}
+    </div>
+    <div id="panel-joined" class="tab-panel" hidden>
+      {% if joined_trips %}
+      <ul class="space-y-3 list-none p-0 m-0">
+        {% for trip in joined_trips %}
+        <li>
+          <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="block p-4 border border-gray-200 rounded-sm hover:bg-gray-50 hover:border-[#007FAF] transition-colors">
+            <span class="font-bold text-gray-900">{{ trip.name }}</span>
+            <span class="text-gray-600 ml-2">{{ trip.origin }} → {{ trip.destination }}</span>
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-gray-600">You haven't joined any trips yet. Use an invite link to join a trip.</p>
+      <a href="/" class="inline-block mt-4 bg-[#426F42] hover:bg-[#326032] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Go to home</a>
+      {% endif %}
+    </div>
+  </main>
+  <script>
+    (function () {
+      var tabCreated = document.getElementById("tab-created");
+      var tabJoined = document.getElementById("tab-joined");
+      var panelCreated = document.getElementById("panel-created");
+      var panelJoined = document.getElementById("panel-joined");
+      function showCreated() {
+        if (tabCreated) {
+          tabCreated.classList.add("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
+          tabCreated.classList.remove("text-gray-500");
+        }
+        if (tabJoined) {
+          tabJoined.classList.remove("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
+          tabJoined.classList.add("text-gray-500");
+        }
+        if (panelCreated) panelCreated.hidden = false;
+        if (panelJoined) panelJoined.hidden = true;
+      }
+      function showJoined() {
+        if (tabJoined) {
+          tabJoined.classList.add("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
+          tabJoined.classList.remove("text-gray-500");
+        }
+        if (tabCreated) {
+          tabCreated.classList.remove("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
+          tabCreated.classList.add("text-gray-500");
+        }
+        if (panelJoined) panelJoined.hidden = false;
+        if (panelCreated) panelCreated.hidden = true;
+      }
+      if (tabCreated) tabCreated.addEventListener("click", showCreated);
+      if (tabJoined) tabJoined.addEventListener("click", showJoined);
+      document.querySelectorAll(".delete-trip-btn").forEach(function (btn) {
+        btn.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var code = btn.getAttribute("data-code");
+          if (!code || !confirm("Delete this trip permanently? This cannot be undone.")) return;
+          fetch("/api/trips/" + encodeURIComponent(code), { method: "DELETE" })
+            .then(function (r) { return r.ok ? r.json() : r.json().then(function (d) { throw new Error(d.error || "Could not delete"); }); })
+            .then(function () {
+              var li = btn.closest(".trip-item");
+              if (li) {
+                var ul = li.closest("ul");
+                li.remove();
+                if (ul && ul.children.length === 0) {
+                  ul.outerHTML = '<p class="text-gray-600">You haven\'t created any trips yet.</p><a href="/create" class="inline-block mt-4 bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Create your first trip</a>';
+                }
+              }
+            })
+            .catch(function (err) { alert(err.message || "Could not delete trip."); });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
