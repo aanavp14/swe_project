@@ -1,4 +1,27 @@
+# Local database (each dev has their own)
+instance/
+*.db
+
+# Python
 __pycache__/
-*.pyc
-flask.log
-instance/itinerary.db
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+env/
+
+# Environment / secrets
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
