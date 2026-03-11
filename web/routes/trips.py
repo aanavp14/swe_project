@@ -620,10 +620,16 @@ def create_trips_blueprint(
         except ValueError:
             day_date = result.trip.start_date
         budget = result.trip.per_person_budget * result.trip.num_people / result.trip.total_days()
+
+        # Append dietary preferences if current_user has them
+        final_query = query
+        if current_user.is_authenticated and current_user.dietary_prefs:
+            final_query += f". User dietary preferences: {current_user.dietary_prefs}"
+
         opts = ai_suggestions_service.get_activity_suggestions(
             day_date=day_date,
             destination=result.trip.destination,
-            preferences=query,
+            preferences=final_query,
             budget_remaining=budget,
         )
         return jsonify({

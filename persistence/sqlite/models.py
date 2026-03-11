@@ -25,6 +25,9 @@ class UserModel(UserMixin, db.Model):
     email: Mapped[str] = mapped_column(db.String(255), unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(db.String(255), nullable=False)
     name: Mapped[Optional[str]] = mapped_column(db.String(255), nullable=True)
+    dietary_prefs: Mapped[Optional[str]] = mapped_column(db.String(255), nullable=True)
+    loyalty_programs: Mapped[Optional[str]] = mapped_column(db.Text, nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(db.String(255), nullable=True)
 
 
 class TripModel(db.Model):

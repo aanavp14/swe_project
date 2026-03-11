@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile — RoadMapper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            roadmapper: {
+              blue: '#007FAF',
+              green: '#426F42',
+              orange: '#F48F00',
+              bg: '#F9FAFB'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body class="bg-roadmapper-bg font-sans text-gray-900 antialiased min-h-screen flex flex-col">
+  <nav class="bg-roadmapper-blue text-white shadow-md z-10 sticky top-0">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a href="{{ url_for('index') }}" class="font-extrabold text-2xl tracking-tight text-white hover:text-gray-100 transition-colors no-underline">RoadMapper</a>
+        <div class="flex items-center gap-6">
+          <a href="{{ url_for('my_trips') }}" class="text-white hover:text-gray-200 font-semibold transition-colors">My Trips</a>
+          <a href="{{ url_for('auth.logout') }}" class="text-sm text-gray-200 hover:text-white font-medium transition-colors">Log out</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="flex-1 max-w-3xl w-full mx-auto p-4 sm:p-6 lg:p-8 mt-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="bg-gradient-to-r from-roadmapper-blue to-[#005B82] px-8 py-10 text-white text-center">
+        {% if user.avatar_url %}
+        <img src="{{ user.avatar_url }}" alt="{{ user.name }} avatar" class="w-24 h-24 rounded-full border-4 border-white object-cover mx-auto mb-4 shadow-md" />
+        {% else %}
+        <div class="w-24 h-24 rounded-full bg-white text-roadmapper-blue flex items-center justify-center text-3xl font-bold mx-auto mb-4 shadow-md border-4 border-white">{{ user.name[:1]|upper if user.name else 'U' }}</div>
+        {% endif %}
+        <h1 class="text-3xl font-bold mb-1">{{ user.name or user.email }}</h1>
+        <p class="text-blue-100">{{ user.email }}</p>
+      </div>
+
+      <div class="p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-3 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-roadmapper-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          Travel Preferences
+        </h2>
+
+        <form method="post" class="space-y-6">
+          <div>
+            <label for="dietary_prefs" class="block text-sm font-semibold text-gray-700 mb-2">Dietary Preferences</label>
+            <p class="text-xs text-gray-500 mb-2">This helps our AI suggest better dining options for your trips.</p>
+            <input type="text" id="dietary_prefs" name="dietary_prefs" value="{{ user.dietary_prefs or '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all" placeholder="e.g. Vegetarian, Gluten-Free, Halal" />
+          </div>
+
+          <div>
+            <label for="loyalty_programs" class="block text-sm font-semibold text-gray-700 mb-2">Loyalty Programs</label>
+            <p class="text-xs text-gray-500 mb-2">Add your airline or hotel loyalty programs (internal note).</p>
+            <textarea id="loyalty_programs" name="loyalty_programs" rows="3" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all" placeholder="e.g. Delta SkyMiles #12345, Marriott Bonvoy">{{ user.loyalty_programs or '' }}</textarea>
+          </div>
+
+          <div>
+            <label for="avatar_url" class="block text-sm font-semibold text-gray-700 mb-2">Avatar URL</label>
+            <input type="url" id="avatar_url" name="avatar_url" value="{{ user.avatar_url or '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all" placeholder="https://example.com/my-avatar.jpg" />
+          </div>
+
+          <div class="pt-4 flex justify-end">
+            <button type="submit" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-bold py-3 px-8 rounded-xl transition-all shadow-md">Save Profile</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

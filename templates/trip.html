@@ -116,6 +116,52 @@
       <!-- Left Column: Travelers & Budget (Sticky) -->
       <div class="lg:col-span-1 lg:sticky lg:top-8 flex flex-col gap-6">
 
+        <section id="sidebar-nav" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col mb-6">
+          <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+            Trip Views
+          </h2>
+          <nav class="flex flex-col gap-2 mb-6">
+            <button class="sidebar-tab-btn active text-left px-4 py-2 rounded-lg font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 transition-colors" data-target="all">All Items</button>
+            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="flight">Flights</button>
+            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="hotel">Hotels</button>
+            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="itinerary">Itinerary</button>
+          </nav>
+
+          <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <div class="flex flex-col">
+              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Trip Progress</span>
+              <span id="progress-text" class="text-xl font-extrabold text-gray-900">0%</span>
+            </div>
+            <div class="relative w-12 h-12">
+              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                <!-- Background Circle -->
+                <path
+                  class="text-gray-100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                />
+                <!-- Progress Circle -->
+                <path
+                  id="progress-circle"
+                  class="text-roadmapper-green transition-all duration-500 ease-in-out"
+                  stroke-dasharray="0, 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="3"
+                />
+              </svg>
+            </div>
+          </div>
+        </section>
+
         <section id="collaborators-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-bold text-gray-900 flex items-center">
@@ -140,6 +186,10 @@
         <div id="budget-summary" class="mb-6 p-4 rounded-2xl border {% if budget_summary.over_budget %}bg-red-50/50 border-red-100{% else %}bg-green-50/50 border-green-100{% endif %}">
           <div class="flex justify-between items-center mb-3">
             <h3 class="font-bold text-gray-900 text-sm">Budget tracker</h3>
+            <div class="flex items-center bg-white rounded-full p-1 border border-gray-200 shadow-sm text-xs font-medium">
+              <button id="budget-toggle-total" class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-900 transition-colors">Total</button>
+              <button id="budget-toggle-person" class="px-2 py-0.5 rounded-full text-gray-500 hover:text-gray-900 transition-colors">/ Person</button>
+            </div>
             <span class="text-xs font-semibold px-2 py-1 rounded-full {% if budget_summary.over_budget %}bg-red-100 text-red-700{% else %}bg-green-100 text-roadmapper-green{% endif %}">
               {% if budget_summary.over_budget %}Over Budget{% else %}On Track{% endif %}
             </span>
@@ -156,21 +206,21 @@
           </div>
 
           <div class="flex justify-between text-sm mb-3">
-            <span class="text-gray-500">Spent: <span class="font-bold text-gray-900">${{ budget_summary.spent }}</span></span>
-            <span class="text-gray-500">Total: <span class="font-bold text-gray-900">${{ budget_summary.total_budget }}</span></span>
+            <span class="text-gray-500">Spent: <span id="budget-spent" class="font-bold text-gray-900" data-total="{{ budget_summary.spent }}">${{ budget_summary.spent }}</span></span>
+            <span class="text-gray-500">Total: <span id="budget-total" class="font-bold text-gray-900" data-total="{{ budget_summary.total_budget }}">${{ budget_summary.total_budget }}</span></span>
           </div>
 
           <div class="text-xs text-gray-500 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
-            <div class="flex justify-between mb-1"><span>Flights</span><span>${{ budget_summary.flights_total }}</span></div>
-            <div class="flex justify-between mb-1"><span>Hotels</span><span>${{ budget_summary.hotels_total }}</span></div>
-            <div class="flex justify-between"><span>Activities</span><span>${{ budget_summary.activities_total }}</span></div>
+            <div class="flex justify-between mb-1"><span>Flights</span><span id="budget-flights" data-total="{{ budget_summary.flights_total }}">${{ budget_summary.flights_total }}</span></div>
+            <div class="flex justify-between mb-1"><span>Hotels</span><span id="budget-hotels" data-total="{{ budget_summary.hotels_total }}">${{ budget_summary.hotels_total }}</span></div>
+            <div class="flex justify-between"><span>Activities</span><span id="budget-activities" data-total="{{ budget_summary.activities_total }}">${{ budget_summary.activities_total }}</span></div>
           </div>
 
-          <p class="font-bold text-sm mt-3 mb-0 text-center {% if budget_summary.over_budget %}text-red-600{% else %}text-roadmapper-green{% endif %}">
+          <p id="budget-remaining-text" class="font-bold text-sm mt-3 mb-0 text-center {% if budget_summary.over_budget %}text-red-600{% else %}text-roadmapper-green{% endif %}" data-remaining="{{ budget_summary.remaining|replace('-', '') }}" data-over="{{ 'true' if budget_summary.over_budget else 'false' }}">
             {% if budget_summary.over_budget %}
-              Over by ${{ budget_summary.remaining|replace('-', '') }}
+              Over by $<span class="budget-remaining-val">{{ budget_summary.remaining|replace('-', '') }}</span>
             {% else %}
-              ${{ budget_summary.remaining }} Remaining
+              $<span class="budget-remaining-val">{{ budget_summary.remaining }}</span> Remaining
             {% endif %}
           </p>
         </div>
@@ -200,6 +250,29 @@
           {% if my_collaborator_id and not is_owner %}
           <button type="button" id="leave-trip-btn" class="w-full bg-transparent hover:bg-red-50 text-red-600 font-semibold py-2.5 px-4 rounded-xl transition-colors">Leave trip</button>
           {% endif %}
+        </div>
+      </section>
+
+      <!-- Chat Widget -->
+      <section id="chat-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-0 flex flex-col overflow-hidden">
+        <div class="bg-roadmapper-blue px-4 py-3 flex items-center justify-between cursor-pointer" onclick="document.getElementById('chat-body').classList.toggle('hidden')">
+          <h2 class="text-white font-bold text-sm flex items-center gap-2 m-0">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            Trip Chat
+          </h2>
+          <svg class="w-4 h-4 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+        <div id="chat-body" class="flex flex-col h-64 hidden">
+          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50 text-sm">
+            <!-- Messages go here -->
+            <p class="text-center text-xs text-gray-400 italic mt-2">Welcome to the trip chat!</p>
+          </div>
+          <form id="chat-form" class="border-t border-gray-200 p-3 bg-white flex gap-2">
+            <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-full px-3 py-1.5 text-sm focus:outline-none focus:border-roadmapper-blue focus:ring-1 focus:ring-roadmapper-blue" placeholder="Type a message..." required />
+            <button type="submit" class="bg-roadmapper-blue text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 hover:bg-[#006A93] transition-colors">
+              <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+          </form>
         </div>
       </section>
       </div>
@@ -245,7 +318,7 @@
       <div id="hotel-suggestions-list" class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <section id="flight-section" class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section id="flight-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="flight">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
         Flights ({{ flights|length }})
@@ -332,7 +405,7 @@
       {% endif %}
     </section>
 
-    <section id="hotel-section" class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section id="hotel-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="hotel">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
         Hotels ({{ hotels|length }})
@@ -398,7 +471,7 @@
       {% endif %}
     </section>
 
-    <section class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="itinerary">
       <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
         Itinerary by day ({{ days|length }})
@@ -456,9 +529,141 @@
       </div>
     </div>
   </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
   <script>
     (function () {
       var inviteCode = "{{ trip.invite_code }}";
+      var hasFlights = {{ 'true' if flights else 'false' }};
+      var hasHotels = {{ 'true' if hotels else 'false' }};
+
+      // Sidebar Intelligence
+      function updateProgress() {
+        var completed = 0;
+        if (hasFlights) completed++;
+        if (hasHotels) completed++;
+        var pct = (completed / 2) * 100;
+        var circle = document.getElementById("progress-circle");
+        var text = document.getElementById("progress-text");
+        if (circle) circle.style.strokeDasharray = pct + ", 100";
+        if (text) text.textContent = pct + "%";
+      }
+      updateProgress();
+
+      // Budget Toggle
+      var budgetToggleTotal = document.getElementById("budget-toggle-total");
+      var budgetTogglePerson = document.getElementById("budget-toggle-person");
+      var numPeople = {{ trip.num_people if trip.num_people else 1 }};
+
+      if (budgetToggleTotal && budgetTogglePerson) {
+        function updateBudget(isPerPerson) {
+          var toggleOnCls = ["bg-gray-100", "text-gray-900"];
+          var toggleOffCls = ["text-gray-500", "hover:text-gray-900", "bg-transparent"];
+
+          if (isPerPerson) {
+            budgetTogglePerson.classList.add(...toggleOnCls);
+            budgetTogglePerson.classList.remove(...toggleOffCls);
+            budgetToggleTotal.classList.remove(...toggleOnCls);
+            budgetToggleTotal.classList.add(...toggleOffCls);
+          } else {
+            budgetToggleTotal.classList.add(...toggleOnCls);
+            budgetToggleTotal.classList.remove(...toggleOffCls);
+            budgetTogglePerson.classList.remove(...toggleOnCls);
+            budgetTogglePerson.classList.add(...toggleOffCls);
+          }
+
+          ["budget-spent", "budget-total", "budget-flights", "budget-hotels", "budget-activities"].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var total = parseFloat(el.getAttribute("data-total")) || 0;
+            var val = isPerPerson ? (total / numPeople) : total;
+            el.textContent = "$" + val.toFixed(2);
+          });
+
+          var remText = document.getElementById("budget-remaining-text");
+          if (remText) {
+            var remTotal = parseFloat(remText.getAttribute("data-remaining")) || 0;
+            var isOver = remText.getAttribute("data-over") === "true";
+            var val = isPerPerson ? (remTotal / numPeople) : remTotal;
+
+            var span = remText.querySelector(".budget-remaining-val");
+            if (span) span.textContent = val.toFixed(2);
+          }
+        }
+
+        budgetToggleTotal.addEventListener("click", function() { updateBudget(false); });
+        budgetTogglePerson.addEventListener("click", function() { updateBudget(true); });
+      }
+
+      // Tabbed Filtering
+      var tabBtns = document.querySelectorAll(".sidebar-tab-btn");
+      var tripSections = document.querySelectorAll(".trip-section");
+
+      tabBtns.forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var target = btn.getAttribute("data-target");
+
+          tabBtns.forEach(function(b) {
+            b.classList.remove("active", "bg-gray-100", "text-gray-900");
+            b.classList.add("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+          });
+
+          btn.classList.add("active", "bg-gray-100", "text-gray-900");
+          btn.classList.remove("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+
+          tripSections.forEach(function(section) {
+            if (target === "all" || section.getAttribute("data-section-type") === target) {
+              section.style.display = "";
+            } else {
+              section.style.display = "none";
+            }
+          });
+        });
+      });
+
+      // Real-Time Chat using Socket.IO
+      var socket = io();
+      var tripId = "{{ trip.id }}";
+      var userName = document.body.getAttribute("data-user-name") || "Anonymous";
+
+      socket.on('connect', function() {
+          socket.emit('join_trip', {trip_id: tripId});
+      });
+
+      socket.on('receive_message', function(data) {
+          var msgDiv = document.createElement("div");
+          var isMe = data.user_name === userName;
+          msgDiv.className = isMe ? "self-end max-w-[85%]" : "self-start max-w-[85%]";
+
+          var nameHtml = isMe ? "" : `<span class="text-[10px] text-gray-500 ml-1 mb-0.5 block">${data.user_name}</span>`;
+          var bubbleClass = isMe ? "bg-roadmapper-blue text-white" : "bg-white border border-gray-200 text-gray-800";
+          var roundedClass = isMe ? "rounded-2xl rounded-tr-sm" : "rounded-2xl rounded-tl-sm";
+
+          msgDiv.innerHTML = `
+            ${nameHtml}
+            <div class="px-3 py-2 ${bubbleClass} ${roundedClass} shadow-sm inline-block break-words">
+              ${data.message}
+            </div>
+          `;
+
+          var chatMsgs = document.getElementById("chat-messages");
+          if (chatMsgs) {
+            chatMsgs.appendChild(msgDiv);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+          }
+      });
+
+      var chatForm = document.getElementById("chat-form");
+      var chatInput = document.getElementById("chat-input");
+      if (chatForm && chatInput) {
+        chatForm.addEventListener("submit", function(e) {
+          e.preventDefault();
+          var msg = chatInput.value.trim();
+          if (msg) {
+            socket.emit('send_message', {trip_id: tripId, user_name: userName, message: msg});
+            chatInput.value = "";
+          }
+        });
+      }
       var base = "/api/trips/" + encodeURIComponent(inviteCode);
       var days = [{% for d in days %}{ id: {{ d.id }}, date: "{{ d.date.isoformat() }}", order: {{ loop.index }} }{% if not loop.last %}, {% endif %}{% endfor %}];
 

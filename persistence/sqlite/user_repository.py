@@ -37,3 +37,15 @@ def update_user_name(user_id: int, name: str) -> bool:
     user.name = (name or "").strip() or None
     db.session.commit()
     return True
+
+
+def update_user_profile(user_id: int, dietary_prefs: Optional[str], loyalty_programs: Optional[str], avatar_url: Optional[str]) -> bool:
+    """Update user profile fields. Returns True if updated."""
+    user = UserModel.query.get(user_id)
+    if not user:
+        return False
+    user.dietary_prefs = (dietary_prefs or "").strip() or None
+    user.loyalty_programs = (loyalty_programs or "").strip() or None
+    user.avatar_url = (avatar_url or "").strip() or None
+    db.session.commit()
+    return True
