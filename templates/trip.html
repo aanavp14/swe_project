@@ -60,7 +60,7 @@
           <button class="sidebar-tab-btn active text-left px-4 py-2 rounded-xl font-medium text-roadmapper-blue bg-white transition-colors" data-target="all">All Items</button>
           <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="flight">Flights</button>
           <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="hotel">Hotels</button>
-          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="itinerary">Itinerary</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="itinerary">Activities</button>
         </nav>
 
         <div class="mt-2 pt-4 border-t border-white/10 flex items-center justify-between">
@@ -73,7 +73,7 @@
               <!-- Background Circle -->
               <path class="text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
               <!-- Progress Circle -->
-              <path id="progress-circle" class="text-roadmapper-green transition-all duration-500 ease-in-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+              <path id="progress-circle" class="text-green-400 transition-all duration-500 ease-in-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
             </svg>
           </div>
         </div>
@@ -221,8 +221,8 @@
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-roadmapper-blue/10 text-roadmapper-blue text-xs font-semibold uppercase tracking-wider mb-3">
-            <span class="w-1.5 h-1.5 rounded-full bg-roadmapper-blue animate-pulse"></span>
-            Planning
+            <span id="planning-badge-dot" class="w-1.5 h-1.5 rounded-full bg-roadmapper-blue animate-pulse"></span>
+            <span id="planning-badge-text">Planning</span>
           </div>
           <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">{{ trip.name }}</h1>
           <p class="text-lg text-gray-600 m-0 flex items-center flex-wrap gap-2">
@@ -270,7 +270,7 @@
     </section>
 
     <!-- Main Content Flow (Full Width) -->
-    <div class="flex flex-col gap-8">
+    <div class="flex flex-col gap-6">
 
     <section id="join-section" class="bg-white rounded-md shadow-md mb-8 p-6" hidden>
       <h2 class="text-xl font-bold text-gray-900 mb-2">Join this trip</h2>
@@ -295,12 +295,15 @@
       <p id="join-error" class="text-[#F48F00] text-sm mt-2 font-medium" hidden></p>
     </section>
 
-    <section id="ai-suggestions-section" class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section id="ai-suggestions-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6">
       <h2 class="text-xl font-bold text-gray-900 mb-2">AI suggestions</h2>
-      <p class="text-gray-600 mb-6">AI searches travel sites for options. Click <strong class="text-gray-900">Search</strong> on each suggestion to find and book on Google Flights/Hotels—always verify prices before booking.</p>
+      <p class="text-gray-600 mb-6 text-sm">AI searches travel sites for options. Click <strong class="text-gray-900">Search</strong> on each suggestion to find and book on Google Flights/Hotels—always verify prices before booking.</p>
       
       <div class="flex flex-wrap gap-3 mb-4">
-        <button type="button" id="get-suggestions-btn" class="bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Get AI suggestions</button>
+        <button type="button" id="get-suggestions-btn" class="flex items-center justify-center gap-2 bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm">
+          <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          Get AI suggestions
+        </button>
       </div>
       
       <p id="suggestions-loading" class="text-gray-500 italic mt-4" hidden>Searching for flights and hotels&hellip;</p>
@@ -310,7 +313,7 @@
       <div id="hotel-suggestions-list" class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <section id="flight-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="flight">
+    <section id="flight-section" class="trip-section bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6" data-section-type="flight">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
         Flights ({{ flights|length }})
@@ -360,8 +363,8 @@
           <input type="text" id="flight-time" name="departure_time" placeholder="e.g. 9:00 AM – 2:00 PM" class="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#007FAF]" />
         </div>
         <div class="flex flex-wrap gap-3 mt-4">
-          <button type="submit" class="bg-[#426F42] hover:bg-[#326032] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Add flight</button>
-          <button type="button" id="ask-flight-ai-btn" class="bg-[#007FAF]/10 hover:bg-[#007FAF]/20 text-[#007FAF] border border-[#007FAF] font-semibold py-2 px-6 rounded-sm transition-colors">Ask AI</button>
+          <button type="submit" class="bg-roadmapper-green hover:bg-[#326032] text-white font-semibold py-2.5 px-6 rounded-xl transition-all shadow-sm">Add flight</button>
+          <button type="button" id="ask-flight-ai-btn" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2.5 px-6 rounded-xl transition-all shadow-sm">Ask AI</button>
         </div>
       </form>
       <p id="flight-error" class="text-[#F48F00] text-sm mt-2 font-medium" hidden></p>
@@ -397,7 +400,7 @@
       {% endif %}
     </section>
 
-    <section id="hotel-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="hotel">
+    <section id="hotel-section" class="trip-section bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6" data-section-type="hotel">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
         Hotels ({{ hotels|length }})
@@ -427,7 +430,9 @@
             <input type="number" id="hotel-cost" name="cost_estimate" min="0" step="0.01" required placeholder="e.g. 150" class="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#007FAF]" />
           </div>
         </div>
-        <button type="submit" class="bg-[#426F42] hover:bg-[#326032] text-white font-semibold py-2 px-6 rounded-sm transition-colors mt-2">Add hotel</button>
+        <div class="mt-4">
+          <button type="submit" class="bg-roadmapper-green hover:bg-[#326032] text-white font-semibold py-2.5 px-6 rounded-xl transition-all shadow-sm">Add hotel</button>
+        </div>
       </form>
       <p id="hotel-error" class="text-[#F48F00] text-sm mt-2 font-medium" hidden></p>
       
@@ -463,18 +468,18 @@
       {% endif %}
     </section>
 
-    <section class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="itinerary">
+    <section class="trip-section bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 p-6" data-section-type="itinerary">
       <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-        Itinerary by day ({{ days|length }})
+        Activities by day ({{ days|length }})
       </h2>
       <div id="activity-search" class="bg-gray-50 p-4 rounded-sm border border-gray-200 mb-6">
         <p class="text-sm font-medium text-gray-700 mb-2">Ask AI to search for activities:</p>
         <div class="flex flex-col sm:flex-row gap-3">
           <input type="text" id="activity-query" placeholder="e.g. beach activities, museums" class="flex-1 w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#007FAF]" />
-          <div class="flex gap-2">
-            <button type="button" id="search-activities-btn" class="bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors flex-1 sm:flex-none">Search</button>
-            <button type="button" id="clear-activities-btn" class="bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-300 font-semibold py-2 px-4 rounded-sm transition-colors flex-1 sm:flex-none">Clear</button>
+          <div class="flex gap-2 mt-2 sm:mt-0">
+            <button type="button" id="search-activities-btn" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-xl transition-all shadow-sm flex-1 sm:flex-none">Search</button>
+            <button type="button" id="clear-activities-btn" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-2 px-4 rounded-xl transition-all shadow-sm flex-1 sm:flex-none">Clear</button>
           </div>
         </div>
         <p id="activity-search-loading" class="text-gray-500 italic mt-3" hidden>Searching&hellip;</p>
@@ -515,7 +520,7 @@
     <section class="bg-white rounded-md shadow-md mb-8 p-6 text-center border-t-4 border-[#F48F00]">
       <h2 class="text-xl font-bold text-gray-900 mb-2">Ready to Share or Print your Itinerary?</h2>
       <p class="text-gray-600 mb-6 max-w-xl mx-auto">View a printable summary of your trip with flights, hotels, and daily activities. Perfect for sharing or saving as a PDF.</p>
-      <a href="/trip/{{ trip.invite_code }}/itinerary" class="inline-block bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-3 px-8 rounded-sm transition-colors no-underline">Generate trip itinerary</a>
+      <a href="/trip/{{ trip.invite_code }}/itinerary" class="inline-block bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-3 px-8 rounded-xl transition-all shadow-sm no-underline">Generate trip itinerary</a>
     </section>
 
       </div>
@@ -531,15 +536,43 @@
       // Sidebar Intelligence
       function updateProgress() {
         var completed = 0;
-        if (hasFlights) completed++;
-        if (hasHotels) completed++;
+        var flightItems = document.querySelectorAll('.remove-item-btn[data-type="flight"]');
+        var hotelItems = document.querySelectorAll('.remove-item-btn[data-type="hotel"]');
+        if (flightItems.length > 0 || hasFlights) completed++;
+        if (hotelItems.length > 0 || hasHotels) completed++;
         var pct = (completed / 2) * 100;
         var circle = document.getElementById("progress-circle");
         var text = document.getElementById("progress-text");
         if (circle) circle.style.strokeDasharray = pct + ", 100";
         if (text) text.textContent = pct + "%";
+
+        var planningBadge = document.getElementById("planning-badge-text");
+        var planningDot = document.getElementById("planning-badge-dot");
+        if (planningBadge && planningDot) {
+          if (pct === 100) {
+            planningBadge.textContent = "Booked";
+            planningDot.classList.replace("bg-roadmapper-blue", "bg-green-500");
+          } else if (pct > 0) {
+            planningBadge.textContent = "In Progress";
+            planningDot.classList.replace("bg-roadmapper-blue", "bg-yellow-500");
+          }
+        }
       }
       updateProgress();
+
+      // Overwrite append functions to trigger progress update
+      var _origAppendFlight = window.appendFlightToUI;
+      var _origAppendHotel = window.appendHotelToUI;
+
+      // Monitor DOM changes for dynamic updates
+      var observer = new MutationObserver(function(mutations) {
+          updateProgress();
+      });
+      var fList = document.getElementById('flight-list');
+      var hList = document.getElementById('hotel-list');
+      if (fList) observer.observe(fList, { childList: true, subtree: true });
+      if (hList) observer.observe(hList, { childList: true, subtree: true });
+
 
       // Budget Toggle
       var budgetToggleTotal = document.getElementById("budget-toggle-total");
@@ -595,12 +628,12 @@
           var target = btn.getAttribute("data-target");
 
           tabBtns.forEach(function(b) {
-            b.classList.remove("active", "bg-gray-100", "text-gray-900");
-            b.classList.add("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+            b.classList.remove("active", "text-roadmapper-blue", "bg-white");
+            b.classList.add("text-white", "hover:bg-white/10");
           });
 
-          btn.classList.add("active", "bg-gray-100", "text-gray-900");
-          btn.classList.remove("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+          btn.classList.add("active", "text-roadmapper-blue", "bg-white");
+          btn.classList.remove("text-white", "hover:bg-white/10");
 
           tripSections.forEach(function(section) {
             if (target === "all" || section.getAttribute("data-section-type") === target) {
@@ -1366,9 +1399,9 @@
           if (!id) return "";
           var c = count || 0;
           if (hasVoted) {
-            return '<span class="suggestion-voted px-3 py-2.5 rounded-xl border border-green-300 bg-green-50 text-green-700 text-sm inline-flex items-center justify-center shadow-sm" data-id="' + id + '">👍 <span class="vote-count ml-1">' + c + '</span></span>';
+            return '<span class="suggestion-voted px-4 py-2.5 rounded-xl border border-green-300 bg-green-50 text-green-700 text-sm inline-flex items-center justify-center shadow-sm font-semibold" data-id="' + id + '">👍 <span class="vote-count ml-2">' + c + '</span></span>';
           }
-          return '<button type="button" class="suggestion-vote-btn px-3 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-sm inline-flex items-center justify-center transition-colors shadow-sm bg-white" data-id="' + id + '" title="Upvote">👍 <span class="vote-count ml-1 text-gray-700">' + c + '</span></button>';
+          return '<button type="button" class="suggestion-vote-btn px-4 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-sm inline-flex items-center justify-center transition-colors shadow-sm bg-white font-semibold" data-id="' + id + '" title="Upvote">👍 <span class="vote-count ml-2 text-gray-700">' + c + '</span></button>';
         }
 
         function dismissBtnHtml() {
@@ -1595,7 +1628,7 @@
                     <p class="text-sm text-gray-600 m-0">${o.description || ""}</p>
                     <div class="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       ${linkHtml}
-                      <button type="button" class="mt-3 sm:mt-0 w-full sm:w-auto bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors text-sm">Save flight</button>
+                      <button type="button" class="mt-3 sm:mt-0 w-full sm:w-auto bg-roadmapper-green hover:bg-[#326032] text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm text-sm">Save flight</button>
                     </div>
                   </div>
                 `;
@@ -1693,8 +1726,12 @@
                 
                 var btn = document.createElement("button");
                 btn.type = "button";
-                btn.className = "flex-1 sm:flex-none bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors text-sm whitespace-nowrap";
+                btn.className = "flex-1 sm:flex-none bg-roadmapper-green hover:bg-[#326032] text-white font-semibold py-2 px-5 rounded-xl transition-all shadow-sm text-sm whitespace-nowrap";
                 btn.textContent = "Save to day";
+
+                var voteHtml = voteBtnHtml(a.id, a.vote_count, a.user_has_voted);
+                actionDiv.innerHTML += ` ${voteHtml}`; // Add to HTML but reconstruct events if we had real IDs here. Activities from AI don't have DB IDs yet.
+
                 btn.onclick = function () {
                   var err = document.getElementById("activity-error");
                   if (err) { err.hidden = true; err.textContent = ""; }

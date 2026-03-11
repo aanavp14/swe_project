@@ -55,9 +55,15 @@
 
   <!-- Main Content Canvas -->
   <main class="flex-1 p-4 md:p-8 md:max-w-5xl mx-auto w-full">
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex items-center justify-between mb-8 flex-wrap gap-4">
       <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">My trips</h2>
-      <a href="/create" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2 px-5 rounded-xl transition-colors shadow-sm text-sm">Create Trip</a>
+      <div class="flex gap-3 w-full sm:w-auto">
+        <form id="join-form" action="#" onsubmit="window.location.href='/trip/'+document.getElementById('invite_code').value; return false;" class="flex gap-2 w-full sm:w-auto">
+            <input type="text" id="invite_code" placeholder="Invite Code" required class="w-full sm:w-40 px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all text-sm" />
+            <button type="submit" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-semibold py-2 px-4 rounded-xl transition-all shadow-sm text-sm">Join</button>
+        </form>
+        <a href="/create" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2 px-5 rounded-xl transition-colors shadow-sm text-sm whitespace-nowrap">Create Trip</a>
+      </div>
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
@@ -69,7 +75,7 @@
       <div class="p-6">
         <div id="panel-created" class="tab-panel">
           {% if created_trips %}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-4">
             {% for trip in created_trips %}
             <div class="trip-item group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow relative">
               <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 p-5 no-underline block focus:outline-none">
@@ -105,7 +111,7 @@
 
         <div id="panel-joined" class="tab-panel" hidden>
           {% if joined_trips %}
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="flex flex-col gap-4">
             {% for trip in joined_trips %}
             <div class="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
               <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 p-5 no-underline block focus:outline-none">

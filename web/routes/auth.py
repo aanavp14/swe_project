@@ -6,7 +6,7 @@ from flask import Blueprint, redirect, render_template, request, url_for
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from persistence.sqlite.user_repository import create_user, get_user_by_email, update_user_profile
+from persistence.sqlite.user_repository import create_user, get_user_by_email, update_user_profile, update_user_name
 
 bp = Blueprint("auth", __name__)
 
@@ -69,9 +69,12 @@ def logout():
 def profile():
     """View and update user profile."""
     if request.method == "POST":
+        name = request.form.get("name")
         dietary_prefs = request.form.get("dietary_prefs")
         loyalty_programs = request.form.get("loyalty_programs")
         avatar_url = request.form.get("avatar_url")
+        if name is not None:
+            update_user_name(current_user.id, name)
         update_user_profile(current_user.id, dietary_prefs, loyalty_programs, avatar_url)
         return redirect(url_for("auth.profile"))
     return render_template("profile.html", user=current_user)

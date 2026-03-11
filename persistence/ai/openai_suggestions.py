@@ -160,16 +160,16 @@ class OpenAISuggestionsService:
 - Flights: {origin} to {destination}, round-trip {start_date.isoformat()} to {end_date.isoformat()}, {num_people} passengers, budget around ${total_budget}
 - Hotels: {destination}, check-in {start_date.isoformat()} check-out {end_date.isoformat()}
 
-CRITICAL: For each flight and hotel, you MUST include the actual clickable URL in "link". Search Google Flights, Kayak, Expedia, Skyscanner, Booking.com, etc., and extract the real https:// URL that opens that specific flight or hotel (e.g. a Google Flights result link, Kayak booking link, or hotel booking page). Do NOT use placeholder text—every option must have a working link.
-
-Rules:
-1) Use only information present in web search results; do not fabricate.
-2) Extract the real URL for each option from the search results—the link must take the user directly to that specific flight or hotel.
-3) If a field is missing (like flight number), set it to null.
-4) For flights, cost_estimate must be the price PER PERSON in USD.
-5) For hotels, cost_estimate must be the price PER NIGHT in USD (not total stay).
-6) Return up to 3 flights and up to 3 hotels. Each must have a valid "link" starting with https://
-7) Respond with ONLY valid JSON. No explanations, no prose. If search finds no results, return {{"flights":[],"hotels":[]}}.
+CRITICAL: You are an automated agent connected directly to a production database.
+1. DO NOT return placeholder text like "Check Google Flights for current prices".
+2. You MUST perform the web search.
+3. You MUST extract real airlines, real flight numbers, real hotels, and real prices.
+4. For each flight and hotel, you MUST include the actual clickable URL in "link" that opens that specific search result.
+5. If a field is completely missing (like flight number), set it to null. Do NOT use fake numbers.
+6. For flights, provide ONLY the actual price per person in USD.
+7. For hotels, the `cost_estimate` MUST be the price PER NIGHT in USD.
+8. Return up to 3 flights and up to 3 hotels. Each must have a valid "link".
+9. Respond with ONLY valid JSON. No explanations, no prose. If search finds no results, return {{"flights":[],"hotels":[]}}.
 
 Return ONLY valid JSON, no prose:
 {{
@@ -289,7 +289,11 @@ Route: {origin} to {destination}
 Departure date: {departure_date.isoformat()}
 Return date: {ret_date.isoformat() if trip_type != "one_way" else "N/A (one-way)"}
 
-CRITICAL: For each flight, you MUST include the actual clickable URL in "link". Search Google Flights, Kayak, Expedia, etc., and extract the real https:// URL that opens that specific flight result. Every option must have a working link—no placeholders.
+CRITICAL: You are an automated agent connected directly to a production database.
+1. DO NOT return placeholder text.
+2. You MUST perform the web search.
+3. You MUST extract real airlines, real flight numbers, and real prices.
+4. For each flight, you MUST include the actual clickable URL in "link" that opens that specific search result.
 
 Return ONLY valid JSON array. No explanations, no prose. If search finds no results, return [].
 [{{"airline":"...","flight_number":"... or null","description":"...","cost_estimate": number,"origin_code":"...","destination_code":"...","link":"https://... (actual URL to this flight)","trip_type":"{trip_type}"}}]
@@ -297,7 +301,7 @@ Return ONLY valid JSON array. No explanations, no prose. If search finds no resu
 Rules:
 - Include up to 5 options from web search results.
 - Each flight must have "link" with a real https:// URL.
-- Do not fabricate; use null for flight_number if unavailable.
+- Do not fabricate; use null for flight_number if unavailable. Do NOT use fake numbers.
 - Set trip_type exactly to "{trip_type}" for each item."""
         try:
             content = self._call_with_web_search(prompt)

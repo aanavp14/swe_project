@@ -706,13 +706,33 @@ def create_trips_blueprint(
         activities_by_day = {}
         for a in result.activities:
             activities_by_day.setdefault(a.day_id, []).append(a)
+
+        trip_model = TripModel.query.filter_by(invite_code=code).first()
+        is_owner = trip_model is not None and trip_model.owner_id == current_user.id
+
         my_collaborator_id = None
         user_display_name = (current_user.name or "").strip() or (current_user.email or "").split("@")[0] or "Traveler"
         if collaborator_repo and result.trip.id:
             my_collab = collaborator_repo.get_by_trip_id_and_user_id(result.trip.id, current_user.id)
             my_collaborator_id = my_collab.id if my_collab else None
-        trip_model = TripModel.query.filter_by(invite_code=code).first()
-        is_owner = trip_model is not None and trip_model.owner_id == current_user.id
+
+            # Auto-join logic if logged in user is viewing a trip for the first time
+            if not is_owner and not my_collaborator_id:
+                try:
+                    join_trip_service.execute(
+                        invite_code=code,
+                        user_id=current_user.id,
+                        name=user_display_name,
+                        budget=result.trip.per_person_budget,
+                    )
+                    # Refresh data after joining
+                    result = get_trip_service.execute(code)
+                    my_collab = collaborator_repo.get_by_trip_id_and_user_id(result.trip.id, current_user.id)
+                    my_collaborator_id = my_collab.id if my_collab else None
+                except Exception as e:
+                    # Ignore join errors like already joined (which is handled above anyway)
+                    pass
+
         return render_template(
             "trip.html",
             trip=result.trip,

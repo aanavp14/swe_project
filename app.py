@@ -273,16 +273,34 @@ def create_app() -> Flask:
             joined_trips=joined,
         )
 
+
     # SocketIO events for Real-Time Chat
     @socketio.on("join_trip")
     def on_join(data):
+        if not current_user.is_authenticated:
+            return
         invite_code = data.get("invite_code")
         if not invite_code:
             return
+
+        # Verify user is part of trip
+        trip_repo = SqliteTripRepository()
+        trip = trip_repo.get_by_invite_code(invite_code)
+        if not trip:
+            return
+
+        is_owner = trip.owner_id == current_user.id
+        is_collaborator = any(c.user_id == current_user.id for c in trip.collaborators)
+
+        if not (is_owner or is_collaborator):
+            return
+
         join_room(invite_code)
 
     @socketio.on("leave_trip")
     def on_leave(data):
+        if not current_user.is_authenticated:
+            return
         invite_code = data.get("invite_code")
         if not invite_code:
             return
@@ -290,17 +308,35 @@ def create_app() -> Flask:
 
     @socketio.on("send_message")
     def on_send_message(data):
+        if not current_user.is_authenticated:
+            return
+
         invite_code = data.get("invite_code")
-        user_name = data.get("user_name", "Anonymous")
         message = data.get("message")
+
         if not invite_code or not message:
             return
+
+        # Verify user is part of trip
+        trip_repo = SqliteTripRepository()
+        trip = trip_repo.get_by_invite_code(invite_code)
+        if not trip:
+            return
+
+        is_owner = trip.owner_id == current_user.id
+        is_collaborator = any(c.user_id == current_user.id for c in trip.collaborators)
+
+        if not (is_owner or is_collaborator):
+            return
+
+        # Use user's real name instead of relying on client data
+        user_name = current_user.display_name or current_user.email
+
         emit("receive_message", {
             "user_name": user_name,
             "message": message,
             "timestamp": dt.utcnow().isoformat()
-        }, to=invite_code)
-
+        }, to=invite_code, room=invite_code)
     return app
 
 

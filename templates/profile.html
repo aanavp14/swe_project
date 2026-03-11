@@ -62,6 +62,11 @@
 
         <form method="post" class="space-y-6">
           <div>
+            <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">Display Name</label>
+            <input type="text" id="name" name="name" value="{{ user.name or '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all" placeholder="e.g. Alex" />
+          </div>
+
+          <div>
             <label for="dietary_prefs" class="block text-sm font-semibold text-gray-700 mb-2">Dietary Preferences</label>
             <p class="text-xs text-gray-500 mb-2">This helps our AI suggest better dining options for your trips.</p>
             <input type="text" id="dietary_prefs" name="dietary_prefs" value="{{ user.dietary_prefs or '' }}" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue transition-all" placeholder="e.g. Vegetarian, Gluten-Free, Halal" />
