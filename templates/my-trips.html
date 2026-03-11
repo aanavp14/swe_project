@@ -4,65 +4,136 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My trips — RoadMapper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            roadmapper: {
+              blue: '#007FAF',
+              green: '#426F42',
+              orange: '#F48F00',
+              bg: '#F9FAFB'
+            }
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
-<body class="bg-gray-100 font-sans text-gray-900 antialiased min-h-screen">
-  <div class="flex h-1.5 w-full">
-    <div class="flex-1 bg-[#007FAF]"></div>
-    <div class="flex-1 bg-[#426F42]"></div>
-    <div class="flex-1 bg-[#F48F00]"></div>
-  </div>
-  <header class="py-6 text-center">
-    <h1 class="text-4xl font-bold tracking-tight text-gray-900 m-0">
-      <a href="/" class="roadmapper-gradient no-underline hover:opacity-80">RoadMapper</a>
-    </h1>
-    <nav class="mt-2 text-sm text-gray-600">
-      <span>{{ current_user.email }}</span>
-      <span class="mx-2">&middot;</span>
-      <a href="{{ url_for('auth.logout') }}" class="text-[#007FAF] hover:underline font-medium">Log out</a>
+<body class="bg-roadmapper-bg font-sans text-gray-900 antialiased min-h-screen flex flex-col md:flex-row">
+
+  <!-- Sidebar Navigation -->
+  <aside class="w-full md:w-64 bg-roadmapper-blue text-white flex flex-col sticky top-0 md:h-screen z-10 shrink-0">
+    <div class="p-6 border-b border-white/20">
+      <h1 class="text-2xl font-bold tracking-tight m-0">
+        <a href="/" class="text-white no-underline hover:opacity-80">RoadMapper</a>
+      </h1>
+    </div>
+    <nav class="flex-1 p-4 flex flex-col gap-2 text-sm">
+      <a href="/my-trips" class="flex items-center gap-2 px-4 py-2 rounded-md bg-white/20 transition-colors font-medium text-white no-underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+        My trips
+      </a>
     </nav>
-  </header>
-  <main class="max-w-3xl mx-auto mb-10 bg-white p-8 rounded-md shadow-md border-t-4 border-[#007FAF]">
-    <h2 class="text-2xl font-bold text-gray-900 mb-4">My trips</h2>
-    <div class="flex border-b border-gray-200 mb-6">
-      <button type="button" id="tab-created" class="tab-btn px-4 py-2 font-semibold text-[#007FAF] border-b-2 border-[#007FAF] -mb-px">Trips I created</button>
-      <button type="button" id="tab-joined" class="tab-btn px-4 py-2 font-semibold text-gray-500 hover:text-gray-700 -mb-px">Trips I joined</button>
+    <div class="p-4 border-t border-white/20">
+      <div class="px-4 py-2 mb-2 text-xs font-semibold text-white/60 uppercase tracking-wider truncate" title="{{ current_user.email }}">{{ current_user.email }}</div>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Log out
+      </a>
     </div>
-    <div id="panel-created" class="tab-panel">
-      {% if created_trips %}
-      <ul class="space-y-3 list-none p-0 m-0">
-        {% for trip in created_trips %}
-        <li class="trip-item flex items-center gap-2 p-4 border border-gray-200 rounded-sm hover:bg-gray-50 hover:border-[#007FAF] transition-colors">
-          <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 min-w-0">
-            <span class="font-bold text-gray-900">{{ trip.name }}</span>
-            <span class="text-gray-600 ml-2">{{ trip.origin }} → {{ trip.destination }}</span>
-          </a>
-          <button type="button" class="delete-trip-btn shrink-0 px-3 py-1.5 text-sm text-red-600 border border-red-300 rounded-sm hover:bg-red-50" data-code="{{ trip.invite_code }}" title="Delete trip">Delete</button>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-gray-600">You haven't created any trips yet.</p>
-      <a href="/create" class="inline-block mt-4 bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Create your first trip</a>
-      {% endif %}
+  </aside>
+
+  <!-- Main Content Canvas -->
+  <main class="flex-1 p-4 md:p-8 md:max-w-5xl mx-auto w-full">
+    <div class="flex items-center justify-between mb-8">
+      <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">My trips</h2>
+      <a href="/create" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2 px-5 rounded-xl transition-colors shadow-sm text-sm">Create Trip</a>
     </div>
-    <div id="panel-joined" class="tab-panel" hidden>
-      {% if joined_trips %}
-      <ul class="space-y-3 list-none p-0 m-0">
-        {% for trip in joined_trips %}
-        <li>
-          <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="block p-4 border border-gray-200 rounded-sm hover:bg-gray-50 hover:border-[#007FAF] transition-colors">
-            <span class="font-bold text-gray-900">{{ trip.name }}</span>
-            <span class="text-gray-600 ml-2">{{ trip.origin }} → {{ trip.destination }}</span>
-          </a>
-        </li>
-        {% endfor %}
-      </ul>
-      {% else %}
-      <p class="text-gray-600">You haven't joined any trips yet. Use an invite link to join a trip.</p>
-      <a href="/" class="inline-block mt-4 bg-[#426F42] hover:bg-[#326032] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Go to home</a>
-      {% endif %}
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="flex border-b border-gray-200 px-2 pt-2 bg-gray-50/50">
+        <button type="button" id="tab-created" class="tab-btn px-6 py-3 font-semibold text-roadmapper-blue border-b-2 border-roadmapper-blue transition-colors focus:outline-none">Trips I created</button>
+        <button type="button" id="tab-joined" class="tab-btn px-6 py-3 font-semibold text-gray-500 hover:text-gray-700 border-b-2 border-transparent transition-colors focus:outline-none">Trips I joined</button>
+      </div>
+
+      <div class="p-6">
+        <div id="panel-created" class="tab-panel">
+          {% if created_trips %}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for trip in created_trips %}
+            <div class="trip-item group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow relative">
+              <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 p-5 no-underline block focus:outline-none">
+                <h3 class="font-bold text-xl text-gray-900 mb-2 truncate group-hover:text-roadmapper-blue transition-colors">{{ trip.name }}</h3>
+                <div class="flex items-center gap-2 text-sm text-gray-600 font-medium mb-4">
+                  <span class="truncate">{{ trip.origin }}</span>
+                  <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                  <span class="truncate">{{ trip.destination }}</span>
+                </div>
+                <div class="inline-flex items-center px-2.5 py-1 rounded-full bg-roadmapper-blue/10 text-roadmapper-blue text-xs font-semibold">
+                  Owner
+                </div>
+              </a>
+              <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button type="button" class="delete-trip-btn p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none" data-code="{{ trip.invite_code }}" title="Delete trip">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="py-12 flex flex-col items-center justify-center text-center">
+            <div class="w-16 h-16 bg-blue-50 text-roadmapper-blue rounded-full flex items-center justify-center mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">No trips created yet</h3>
+            <p class="text-gray-500 max-w-sm mb-6">Start planning your next adventure. Create a trip to invite friends and collaborate.</p>
+            <a href="/create" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-sm">Create your first trip</a>
+          </div>
+          {% endif %}
+        </div>
+
+        <div id="panel-joined" class="tab-panel" hidden>
+          {% if joined_trips %}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for trip in joined_trips %}
+            <div class="group flex flex-col bg-white border border-gray-200 rounded-2xl overflow-hidden hover:shadow-md transition-shadow">
+              <a href="{{ url_for('trips.trip_page', code=trip.invite_code) }}" class="flex-1 p-5 no-underline block focus:outline-none">
+                <h3 class="font-bold text-xl text-gray-900 mb-2 truncate group-hover:text-roadmapper-blue transition-colors">{{ trip.name }}</h3>
+                <div class="flex items-center gap-2 text-sm text-gray-600 font-medium mb-4">
+                  <span class="truncate">{{ trip.origin }}</span>
+                  <svg class="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                  <span class="truncate">{{ trip.destination }}</span>
+                </div>
+                <div class="inline-flex items-center px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-semibold">
+                  Collaborator
+                </div>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="py-12 flex flex-col items-center justify-center text-center">
+            <div class="w-16 h-16 bg-gray-50 text-gray-400 rounded-full flex items-center justify-center mb-4">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">No shared trips yet</h3>
+            <p class="text-gray-500 max-w-sm mb-6">You haven't joined any trips yet. Ask a friend for an invite link to start collaborating.</p>
+            <a href="/" class="bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-sm">Go to home</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
     </div>
   </main>
   <script>
@@ -73,24 +144,24 @@
       var panelJoined = document.getElementById("panel-joined");
       function showCreated() {
         if (tabCreated) {
-          tabCreated.classList.add("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
-          tabCreated.classList.remove("text-gray-500");
+          tabCreated.classList.add("text-roadmapper-blue", "border-roadmapper-blue");
+          tabCreated.classList.remove("text-gray-500", "border-transparent", "hover:text-gray-700");
         }
         if (tabJoined) {
-          tabJoined.classList.remove("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
-          tabJoined.classList.add("text-gray-500");
+          tabJoined.classList.remove("text-roadmapper-blue", "border-roadmapper-blue");
+          tabJoined.classList.add("text-gray-500", "border-transparent", "hover:text-gray-700");
         }
         if (panelCreated) panelCreated.hidden = false;
         if (panelJoined) panelJoined.hidden = true;
       }
       function showJoined() {
         if (tabJoined) {
-          tabJoined.classList.add("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
-          tabJoined.classList.remove("text-gray-500");
+          tabJoined.classList.add("text-roadmapper-blue", "border-roadmapper-blue");
+          tabJoined.classList.remove("text-gray-500", "border-transparent", "hover:text-gray-700");
         }
         if (tabCreated) {
-          tabCreated.classList.remove("text-[#007FAF]", "border-b-2", "border-[#007FAF]");
-          tabCreated.classList.add("text-gray-500");
+          tabCreated.classList.remove("text-roadmapper-blue", "border-roadmapper-blue");
+          tabCreated.classList.add("text-gray-500", "border-transparent", "hover:text-gray-700");
         }
         if (panelJoined) panelJoined.hidden = false;
         if (panelCreated) panelCreated.hidden = true;
@@ -110,8 +181,9 @@
               if (li) {
                 var ul = li.closest("ul");
                 li.remove();
-                if (ul && ul.children.length === 0) {
-                  ul.outerHTML = '<p class="text-gray-600">You haven\'t created any trips yet.</p><a href="/create" class="inline-block mt-4 bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Create your first trip</a>';
+                var grid = li.closest(".grid");
+                if (grid && grid.children.length === 0) {
+                  grid.outerHTML = '<div class="py-12 flex flex-col items-center justify-center text-center"><div class="w-16 h-16 bg-blue-50 text-roadmapper-blue rounded-full flex items-center justify-center mb-4"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg></div><h3 class="text-lg font-bold text-gray-900 mb-1">No trips created yet</h3><p class="text-gray-500 max-w-sm mb-6">Start planning your next adventure. Create a trip to invite friends and collaborate.</p><a href="/create" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2.5 px-6 rounded-xl transition-colors shadow-sm">Create your first trip</a></div>';
                 }
               }
             })

@@ -5,107 +5,272 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ trip.name }} — RoadMapper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            roadmapper: {
+              blue: '#007FAF',
+              green: '#426F42',
+              orange: '#F48F00',
+              bg: '#F9FAFB'
+            }
+          }
+        }
+      }
+    }
+  </script>
   <link rel="stylesheet" href="/static/css/style.css" />
 </head>
-<body class="bg-gray-100 font-sans text-gray-900 antialiased min-h-screen" data-user-name="{{ user_display_name|e }}" data-my-collab-id="{{ my_collaborator_id or '' }}">
-  <div class="flex h-1.5 w-full">
-    <div class="flex-1 bg-[#007FAF]"></div>
-    <div class="flex-1 bg-[#426F42]"></div>
-    <div class="flex-1 bg-[#F48F00]"></div>
-  </div>
-  <header class="py-6 text-center">
-    <h1 class="text-4xl font-bold tracking-tight text-gray-900 m-0">
-      <a href="/" class="roadmapper-gradient no-underline hover:opacity-80">RoadMapper</a>
-    </h1>
-    <nav class="mt-2 text-sm text-gray-600">
-      <a href="/my-trips" class="text-[#007FAF] hover:underline font-medium">My trips</a>
-      <span class="mx-2">&middot;</span>
-      <a href="{{ url_for('auth.logout') }}" class="text-[#007FAF] hover:underline font-medium">Log out</a>
-    </nav>
-  </header>
-  <main class="max-w-4xl mx-auto mb-10 px-4 sm:px-6">
-    <section class="bg-white rounded-md shadow-md mb-8 p-6 text-center border-t-4 border-[#007FAF]">
-      <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ trip.name }}</h1>
-      <p class="text-lg text-gray-600 m-0">
-        <span class="font-semibold">{{ trip.origin }}</span> &rarr; <span class="font-semibold">{{ trip.destination }}</span> 
-        <span class="mx-2">&middot;</span> 
-        {{ trip.start_date.strftime('%b %d') }} &ndash; {{ trip.end_date.strftime('%b %d, %Y') }}
-      </p>
-      {% if trip.description %}
-      <p id="trip-description" class="text-gray-600 mt-3 max-w-2xl mx-auto m-0">{{ trip.description }}</p>
-      {% else %}
-      <p id="trip-description" class="text-gray-600 mt-3 max-w-2xl mx-auto m-0" hidden></p>
-      {% endif %}
-    </section>
+<body class="bg-roadmapper-bg font-sans text-gray-900 antialiased min-h-screen flex flex-col md:flex-row" data-user-name="{{ user_display_name|e }}" data-my-collab-id="{{ my_collaborator_id or '' }}">
 
-    <div class="bg-white rounded-md shadow-md mb-8 p-6 flex flex-col md:flex-row gap-6 md:items-stretch md:justify-between">
-      <section class="flex-1 md:pr-6 md:border-r border-gray-200 flex flex-col">
-        <h2 class="text-xl font-bold text-gray-900 mb-2">Share this link</h2>
-        <p class="text-gray-600 mb-2">Invite others to join and add their budget:</p>
-        <div class="bg-gray-50 p-3 rounded-sm border border-gray-200 break-all text-[#007FAF] font-medium mb-3">
-          <a href="{{ invite_url }}" id="invite-link" class="hover:underline">{{ invite_url }}</a>
+  <!-- Sidebar Navigation -->
+  <aside class="w-full md:w-80 bg-roadmapper-blue text-white flex flex-col sticky top-0 md:h-screen z-10 shrink-0 overflow-y-auto custom-scrollbar">
+    <div class="p-6 border-b border-white/20 shrink-0">
+      <h1 class="text-2xl font-bold tracking-tight m-0">
+        <a href="/" class="text-white no-underline hover:opacity-80">RoadMapper</a>
+      </h1>
+    </div>
+
+    <nav class="p-4 flex flex-col gap-2 text-sm shrink-0 border-b border-white/10">
+      <a href="/my-trips" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors font-medium text-white no-underline">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+        Back to my trips
+      </a>
+    </nav>
+
+    <!-- Sidebar Core Components -->
+    <div class="flex-1 p-4 flex flex-col gap-6 overflow-y-auto">
+
+      <!-- Trip Views & Progress -->
+      <section id="sidebar-nav" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <h2 class="text-base font-bold text-white mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+          Trip Views
+        </h2>
+        <nav class="flex flex-col gap-1.5 mb-5">
+          <button class="sidebar-tab-btn active text-left px-4 py-2 rounded-xl font-medium text-roadmapper-blue bg-white transition-colors" data-target="all">All Items</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="flight">Flights</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="hotel">Hotels</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="itinerary">Itinerary</button>
+        </nav>
+
+        <div class="mt-2 pt-4 border-t border-white/10 flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs text-white/60 font-bold uppercase tracking-wider mb-1">Trip Progress</span>
+            <span id="progress-text" class="text-2xl font-extrabold text-white">0%</span>
+          </div>
+          <div class="relative w-12 h-12">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <!-- Background Circle -->
+              <path class="text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+              <!-- Progress Circle -->
+              <path id="progress-circle" class="text-roadmapper-green transition-all duration-500 ease-in-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+            </svg>
+          </div>
         </div>
-        <button type="button" id="add-description-btn" class="w-full mt-auto bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors">{% if trip.description %}Edit Description{% else %}Add Description{% endif %}</button>
       </section>
 
-      <section id="collaborators-section" class="flex-1 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="text-xl font-bold text-gray-900 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            Trip members (<span id="collaborators-count">{{ collaborators|length }}</span>)
+      <!-- Budget Summary -->
+      {% if budget_summary %}
+      <section id="budget-summary" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-base font-bold text-white flex items-center">Budget Tracker</h2>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full {% if budget_summary.over_budget %}bg-red-500/20 text-red-300{% else %}bg-roadmapper-green/20 text-green-300{% endif %}">
+            {% if budget_summary.over_budget %}Over Budget{% else %}On Track{% endif %}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between bg-black/20 rounded-full p-1 border border-white/10 mb-4 text-xs font-medium">
+          <button id="budget-toggle-total" class="flex-1 px-3 py-1.5 rounded-full bg-white text-roadmapper-blue transition-colors">Total</button>
+          <button id="budget-toggle-person" class="flex-1 px-3 py-1.5 rounded-full text-white/70 hover:text-white transition-colors">/ Person</button>
+        </div>
+
+        <div class="w-full bg-black/20 rounded-full h-2 mb-3 overflow-hidden border border-white/5">
+          {% set t_budget = budget_summary.total_budget|float %}
+          {% set percent = 0 %}
+          {% if t_budget > 0 %}
+            {% set percent = (budget_summary.spent|float / t_budget * 100)|round|int %}
+          {% endif %}
+          {% set bar_color = "bg-red-500" if budget_summary.over_budget else "bg-roadmapper-green" %}
+          <div class="{{ bar_color }} h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style="width: {{ [percent, 100]|min }}%"></div>
+        </div>
+
+        <div class="flex justify-between text-sm mb-4">
+          <span class="text-white/70">Spent: <span id="budget-spent" class="font-bold text-white" data-total="{{ budget_summary.spent }}">${{ budget_summary.spent }}</span></span>
+          <span class="text-white/70">Total: <span id="budget-total" class="font-bold text-white" data-total="{{ budget_summary.total_budget }}">${{ budget_summary.total_budget }}</span></span>
+        </div>
+
+        <div class="text-xs text-white/80 bg-black/10 p-3 rounded-xl border border-white/10">
+          <div class="flex justify-between mb-1.5"><span>Flights</span><span id="budget-flights" class="font-medium" data-total="{{ budget_summary.flights_total }}">${{ budget_summary.flights_total }}</span></div>
+          <div class="flex justify-between mb-1.5"><span>Hotels</span><span id="budget-hotels" class="font-medium" data-total="{{ budget_summary.hotels_total }}">${{ budget_summary.hotels_total }}</span></div>
+          <div class="flex justify-between"><span>Activities</span><span id="budget-activities" class="font-medium" data-total="{{ budget_summary.activities_total }}">${{ budget_summary.activities_total }}</span></div>
+        </div>
+
+        <p id="budget-remaining-text" class="font-bold text-sm mt-4 mb-0 text-center {% if budget_summary.over_budget %}text-red-300{% else %}text-green-300{% endif %}" data-remaining="{{ budget_summary.remaining|replace('-', '') }}" data-over="{{ 'true' if budget_summary.over_budget else 'false' }}">
+          {% if budget_summary.over_budget %}
+            Over by $<span class="budget-remaining-val">{{ budget_summary.remaining|replace('-', '') }}</span>
+          {% else %}
+            $<span class="budget-remaining-val">{{ budget_summary.remaining }}</span> Remaining
+          {% endif %}
+        </p>
+      </section>
+      {% endif %}
+
+      <!-- Trip Members -->
+      <section id="collaborators-section" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            Members (<span id="collaborators-count">{{ collaborators|length }}</span>)
           </h2>
           {% if is_owner %}
-          <button type="button" id="edit-members-btn" class="p-1.5 rounded-sm text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Edit members (remove travelers)" aria-label="Edit members">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+          <button type="button" id="edit-members-btn" class="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors" title="Edit members (remove travelers)" aria-label="Edit members">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
           </button>
           {% endif %}
         </div>
-        
-        <div class="flex items-center text-gray-700 bg-gray-50 px-4 py-2 rounded-sm border border-gray-200 mb-3 font-medium">
-          <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span>${{ "%.2f"|format(trip.per_person_budget) }} / person &middot; {{ trip.num_people }} people</span>
+
+        <div class="flex items-center text-white/90 bg-black/20 px-3 py-2.5 rounded-xl border border-white/5 mb-5 text-sm font-medium">
+          <div class="w-7 h-7 rounded-full bg-roadmapper-green border border-green-500/30 flex items-center justify-center mr-2 shadow-sm shrink-0">
+            <span class="text-white font-bold text-xs">$</span>
+          </div>
+          <span class="truncate">${{ "%.2f"|format(trip.per_person_budget) }} / person</span>
         </div>
-        {% if budget_summary %}
-        <div id="budget-summary" class="text-sm rounded-sm border mb-3 p-3 {% if budget_summary.over_budget %}bg-red-50 border-red-200{% else %}bg-green-50 border-green-200{% endif %}">
-          <p class="font-semibold text-gray-900 mb-1">Budget tracker</p>
-          <p class="text-gray-700 mb-0.5">Total budget: ${{ budget_summary.total_budget }}</p>
-          <p class="text-gray-700 mb-0.5">Spent: ${{ budget_summary.spent }} <span class="text-gray-500">(Flights ${{ budget_summary.flights_total }} + Hotels ${{ budget_summary.hotels_total }} + Activities ${{ budget_summary.activities_total }})</span></p>
-          <p class="font-semibold text-gray-900 mt-1 mb-0">{% if budget_summary.over_budget %}<span class="text-red-700">Over budget by ${{ budget_summary.remaining|replace('-', '') }}</span>{% else %}Remaining: <span class="text-green-700">${{ budget_summary.remaining }}</span>{% endif %}</p>
-        </div>
-        {% endif %}
-        
+
         {% if collaborators %}
-        <ul id="collaborators-list" class="space-y-1 mb-4">
+        <ul id="collaborators-list" class="space-y-1.5 mb-5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
           {% for c in collaborators %}
-          <li class="collaborator-item flex justify-between items-center py-1 text-gray-600" data-collaborator-id="{{ c.id }}">
-            <span>{{ c.name }}</span>
-            <span class="font-semibold text-gray-900">${{ "%.2f"|format(c.budget) }}</span>
+          <li class="collaborator-item flex justify-between items-center py-2 px-3 hover:bg-white/10 rounded-xl transition-colors border border-transparent" data-collaborator-id="{{ c.id }}">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-white text-roadmapper-blue flex items-center justify-center text-xs font-bold shadow-sm">{{ c.name[:1]|upper }}</div>
+              <span class="text-sm font-medium text-white">{{ c.name }}</span>
+            </div>
+            <span class="font-bold text-white/90 text-sm">${{ "%.2f"|format(c.budget) }}</span>
           </li>
           {% endfor %}
         </ul>
         {% else %}
-        <p id="collaborators-empty" class="text-gray-500 italic mb-4">No one has joined yet.</p>
+        <p id="collaborators-empty" class="text-white/50 text-sm italic mb-5 text-center py-4 bg-black/10 rounded-xl border border-white/5">No one has joined yet.</p>
         {% endif %}
+
         <div class="mt-auto flex flex-col gap-2">
-          <button type="button" id="add-traveler-btn" class="w-full bg-[#426F42] hover:bg-[#326032] text-white font-semibold py-2 px-4 rounded-sm transition-colors">Add Traveler</button>
+          <button type="button" id="add-traveler-btn" class="w-full bg-white hover:bg-gray-100 text-roadmapper-blue font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Traveler
+          </button>
           {% if my_collaborator_id and not is_owner %}
-          <button type="button" id="leave-trip-btn" class="w-full bg-transparent hover:bg-red-50 text-red-600 border border-red-300 font-semibold py-2 px-4 rounded-sm transition-colors">Leave trip</button>
+          <button type="button" id="leave-trip-btn" class="w-full bg-transparent hover:bg-red-500/20 text-red-300 font-semibold py-2.5 px-4 rounded-xl transition-colors">Leave trip</button>
           {% endif %}
         </div>
       </section>
+
+      <!-- Chat Widget -->
+      <section id="chat-section" class="bg-white/5 rounded-2xl border border-white/10 flex flex-col overflow-hidden shrink-0">
+        <div class="px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border-b border-white/10" onclick="document.getElementById('chat-body').classList.toggle('hidden')">
+          <h2 class="text-white font-bold text-sm flex items-center gap-2 m-0">
+            <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            Trip Chat
+          </h2>
+          <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+        <div id="chat-body" class="flex flex-col h-64 hidden bg-white">
+          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-roadmapper-bg text-sm custom-scrollbar">
+            <!-- Messages go here -->
+            <p class="text-center text-xs text-gray-400 italic mt-2">Welcome to the trip chat!</p>
+          </div>
+          <form id="chat-form" class="border-t border-gray-200 p-3 flex gap-2">
+            <input type="text" id="chat-input" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:bg-white focus:border-roadmapper-blue focus:ring-1 focus:ring-roadmapper-blue transition-all text-gray-900" placeholder="Type a message..." required />
+            <button type="submit" class="bg-roadmapper-blue text-white rounded-xl w-10 h-10 flex items-center justify-center shrink-0 hover:bg-[#006A93] transition-colors shadow-sm">
+              <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+
     </div>
 
-    <section id="write-description-section" class="bg-white rounded-md shadow-md mb-8 p-6 border-t-4 border-[#007FAF]" hidden>
-      <h2 class="text-xl font-bold text-gray-900 mb-2">Write Description</h2>
-      <p class="text-gray-600 mb-4">Add a description for your trip. It will appear under the trip details at the top.</p>
-      <textarea id="description-input" rows="4" placeholder="e.g. Spring break beach getaway with the family..." class="w-full px-4 py-3 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-[#007FAF] focus:border-transparent text-gray-900 placeholder-gray-500"></textarea>
-      <div class="flex gap-3 mt-3">
-        <button type="button" id="save-description-btn" class="bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-sm transition-colors">Save</button>
-        <button type="button" id="cancel-description-btn" class="bg-transparent hover:bg-gray-100 text-gray-600 border border-gray-300 font-semibold py-2 px-6 rounded-sm transition-colors">Cancel</button>
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-white/10 shrink-0">
+      <div class="px-4 py-2 mb-2 text-xs font-semibold text-white/60 uppercase tracking-wider truncate" title="{{ current_user.email }}">{{ current_user.email }}</div>
+      <a href="{{ url_for('auth.profile') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm mb-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        Profile Settings
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        Log out
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Canvas -->
+  <main class="flex-1 p-4 md:p-8 w-full overflow-x-hidden">
+    <!-- Hero Card & Action Row -->
+    <section class="relative bg-gradient-to-br from-roadmapper-blue/10 to-transparent rounded-2xl shadow-sm border border-gray-200 mb-8 p-8 overflow-hidden w-full">
+      <div class="absolute top-0 left-0 w-full h-1 bg-roadmapper-blue"></div>
+
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+        <div>
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-roadmapper-blue/10 text-roadmapper-blue text-xs font-semibold uppercase tracking-wider mb-3">
+            <span class="w-1.5 h-1.5 rounded-full bg-roadmapper-blue animate-pulse"></span>
+            Planning
+          </div>
+          <h1 class="text-4xl font-extrabold text-gray-900 mb-2 tracking-tight">{{ trip.name }}</h1>
+          <p class="text-lg text-gray-600 m-0 flex items-center flex-wrap gap-2">
+            <span class="font-semibold text-gray-800">{{ trip.origin }}</span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+            <span class="font-semibold text-gray-800">{{ trip.destination }}</span>
+            <span class="text-gray-300 mx-1">&bull;</span>
+            {{ trip.start_date.strftime('%b %d') }} &ndash; {{ trip.end_date.strftime('%b %d, %Y') }}
+          </p>
+          {% if trip.description %}
+          <p id="trip-description" class="text-gray-600 mt-4 max-w-2xl m-0">{{ trip.description }}</p>
+          {% else %}
+          <p id="trip-description" class="text-gray-600 mt-4 max-w-2xl m-0" hidden></p>
+          {% endif %}
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
+          <button type="button" onclick="copyInviteLink()" class="flex items-center justify-center gap-2 bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm">
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            <span id="copy-link-text">Copy Invite</span>
+          </button>
+          <a href="{{ invite_url }}" id="invite-link" class="hidden">{{ invite_url }}</a>
+          <button type="button" id="add-description-btn" class="flex items-center justify-center gap-2 bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2.5 px-5 rounded-xl transition-all shadow-sm">
+            <svg class="w-5 h-5 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            {% if trip.description %}Settings{% else %}Settings{% endif %}
+          </button>
+        </div>
       </div>
-      <p id="description-error" class="text-[#F48F00] text-sm mt-2 font-medium" hidden></p>
     </section>
+
+    <!-- Unified Settings / Description Modal -->
+    <section id="write-description-section" class="bg-white rounded-2xl shadow-lg mb-8 p-6 border border-gray-200" hidden>
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xl font-bold text-gray-900">Trip Settings</h2>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 mb-1">Trip Description</label>
+        <textarea id="description-input" rows="4" placeholder="e.g. Spring break beach getaway with the family..." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-roadmapper-blue focus:border-transparent text-gray-900 placeholder-gray-500"></textarea>
+      </div>
+      <div class="flex justify-end gap-3 mt-6">
+        <button type="button" id="cancel-description-btn" class="bg-transparent hover:bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-xl transition-colors">Cancel</button>
+        <button type="button" id="save-description-btn" class="bg-roadmapper-blue hover:bg-[#006A93] text-white font-semibold py-2 px-6 rounded-xl transition-colors shadow-sm">Save Changes</button>
+      </div>
+      <p id="description-error" class="text-red-500 text-sm mt-3 font-medium text-right" hidden></p>
+    </section>
+
+    <!-- Main Content Flow (Full Width) -->
+    <div class="flex flex-col gap-8">
 
     <section id="join-section" class="bg-white rounded-md shadow-md mb-8 p-6" hidden>
       <h2 class="text-xl font-bold text-gray-900 mb-2">Join this trip</h2>
@@ -141,11 +306,11 @@
       <p id="suggestions-loading" class="text-gray-500 italic mt-4" hidden>Searching for flights and hotels&hellip;</p>
       <p id="suggestions-error" class="text-[#F48F00] text-sm mt-2 font-medium" hidden></p>
       
-      <div id="flight-suggestions-list" class="mt-4 space-y-4"></div>
-      <div id="hotel-suggestions-list" class="mt-6 space-y-4"></div>
+      <div id="flight-suggestions-list" class="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      <div id="hotel-suggestions-list" class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </section>
 
-    <section id="flight-section" class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section id="flight-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="flight">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
         Flights ({{ flights|length }})
@@ -219,11 +384,20 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p id="flights-empty" class="text-gray-500 italic mt-4">No flights added yet.</p>
+      <div id="flights-empty" class="mt-8 flex flex-col items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-2xl text-center">
+        <div class="w-16 h-16 bg-blue-100 text-roadmapper-blue rounded-full flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
+        </div>
+        <h4 class="text-lg font-bold text-gray-900 mb-1">No flights added yet</h4>
+        <p class="text-sm text-gray-500 mb-4 max-w-sm">Manually add your flight details above, or click "Get AI suggestions" to let us find the best routes for your trip.</p>
+        <button type="button" onclick="document.getElementById('get-suggestions-btn').click(); document.getElementById('ai-suggestions-section').scrollIntoView({behavior: 'smooth'})" class="text-roadmapper-blue hover:text-[#006A93] font-semibold text-sm transition-colors hover:underline">
+          View AI flight suggestions &rarr;
+        </button>
+      </div>
       {% endif %}
     </section>
 
-    <section id="hotel-section" class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section id="hotel-section" class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="hotel">
       <h2 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
         Hotels ({{ hotels|length }})
@@ -276,11 +450,20 @@
         {% endfor %}
       </ul>
       {% else %}
-      <p id="hotels-empty" class="text-gray-500 italic mt-4">No hotels added yet.</p>
+      <div id="hotels-empty" class="mt-8 flex flex-col items-center justify-center p-8 bg-gray-50 border border-dashed border-gray-300 rounded-2xl text-center">
+        <div class="w-16 h-16 bg-green-100 text-roadmapper-green rounded-full flex items-center justify-center mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+        </div>
+        <h4 class="text-lg font-bold text-gray-900 mb-1">No accommodations added</h4>
+        <p class="text-sm text-gray-500 mb-4 max-w-sm">Enter your hotel details directly, or explore the AI suggestions for great places to stay during your trip.</p>
+        <button type="button" onclick="document.getElementById('get-suggestions-btn').click(); document.getElementById('ai-suggestions-section').scrollIntoView({behavior: 'smooth'})" class="text-roadmapper-green hover:text-[#326032] font-semibold text-sm transition-colors hover:underline">
+          View AI hotel suggestions &rarr;
+        </button>
+      </div>
       {% endif %}
     </section>
 
-    <section class="bg-white rounded-md shadow-md mb-8 p-6">
+    <section class="trip-section bg-white rounded-md shadow-md mb-8 p-6" data-section-type="itinerary">
       <h2 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
         <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
         Itinerary by day ({{ days|length }})
@@ -334,10 +517,144 @@
       <p class="text-gray-600 mb-6 max-w-xl mx-auto">View a printable summary of your trip with flights, hotels, and daily activities. Perfect for sharing or saving as a PDF.</p>
       <a href="/trip/{{ trip.invite_code }}/itinerary" class="inline-block bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-3 px-8 rounded-sm transition-colors no-underline">Generate trip itinerary</a>
     </section>
+
+      </div>
+    </div>
   </main>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
   <script>
     (function () {
       var inviteCode = "{{ trip.invite_code }}";
+      var hasFlights = {{ 'true' if flights else 'false' }};
+      var hasHotels = {{ 'true' if hotels else 'false' }};
+
+      // Sidebar Intelligence
+      function updateProgress() {
+        var completed = 0;
+        if (hasFlights) completed++;
+        if (hasHotels) completed++;
+        var pct = (completed / 2) * 100;
+        var circle = document.getElementById("progress-circle");
+        var text = document.getElementById("progress-text");
+        if (circle) circle.style.strokeDasharray = pct + ", 100";
+        if (text) text.textContent = pct + "%";
+      }
+      updateProgress();
+
+      // Budget Toggle
+      var budgetToggleTotal = document.getElementById("budget-toggle-total");
+      var budgetTogglePerson = document.getElementById("budget-toggle-person");
+      var numPeople = {{ trip.num_people if trip.num_people else 1 }};
+
+      if (budgetToggleTotal && budgetTogglePerson) {
+        function updateBudget(isPerPerson) {
+          var toggleOnCls = ["bg-gray-100", "text-gray-900"];
+          var toggleOffCls = ["text-gray-500", "hover:text-gray-900", "bg-transparent"];
+
+          if (isPerPerson) {
+            budgetTogglePerson.classList.add(...toggleOnCls);
+            budgetTogglePerson.classList.remove(...toggleOffCls);
+            budgetToggleTotal.classList.remove(...toggleOnCls);
+            budgetToggleTotal.classList.add(...toggleOffCls);
+          } else {
+            budgetToggleTotal.classList.add(...toggleOnCls);
+            budgetToggleTotal.classList.remove(...toggleOffCls);
+            budgetTogglePerson.classList.remove(...toggleOnCls);
+            budgetTogglePerson.classList.add(...toggleOffCls);
+          }
+
+          ["budget-spent", "budget-total", "budget-flights", "budget-hotels", "budget-activities"].forEach(function(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            var total = parseFloat(el.getAttribute("data-total")) || 0;
+            var val = isPerPerson ? (total / numPeople) : total;
+            el.textContent = "$" + val.toFixed(2);
+          });
+
+          var remText = document.getElementById("budget-remaining-text");
+          if (remText) {
+            var remTotal = parseFloat(remText.getAttribute("data-remaining")) || 0;
+            var isOver = remText.getAttribute("data-over") === "true";
+            var val = isPerPerson ? (remTotal / numPeople) : remTotal;
+
+            var span = remText.querySelector(".budget-remaining-val");
+            if (span) span.textContent = val.toFixed(2);
+          }
+        }
+
+        budgetToggleTotal.addEventListener("click", function() { updateBudget(false); });
+        budgetTogglePerson.addEventListener("click", function() { updateBudget(true); });
+      }
+
+      // Tabbed Filtering
+      var tabBtns = document.querySelectorAll(".sidebar-tab-btn");
+      var tripSections = document.querySelectorAll(".trip-section");
+
+      tabBtns.forEach(function(btn) {
+        btn.addEventListener("click", function() {
+          var target = btn.getAttribute("data-target");
+
+          tabBtns.forEach(function(b) {
+            b.classList.remove("active", "bg-gray-100", "text-gray-900");
+            b.classList.add("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+          });
+
+          btn.classList.add("active", "bg-gray-100", "text-gray-900");
+          btn.classList.remove("text-gray-600", "hover:text-gray-900", "hover:bg-gray-50");
+
+          tripSections.forEach(function(section) {
+            if (target === "all" || section.getAttribute("data-section-type") === target) {
+              section.style.display = "";
+            } else {
+              section.style.display = "none";
+            }
+          });
+        });
+      });
+
+      // Real-Time Chat using Socket.IO
+      var socket = io();
+      var userName = document.body.getAttribute("data-user-name") || "Anonymous";
+
+      socket.on('connect', function() {
+          socket.emit('join_trip', {invite_code: inviteCode});
+      });
+
+      socket.on('receive_message', function(data) {
+          var msgDiv = document.createElement("div");
+          var isMe = data.user_name === userName;
+          msgDiv.className = isMe ? "self-end max-w-[85%]" : "self-start max-w-[85%]";
+
+          var nameHtml = isMe ? "" : `<span class="text-[10px] text-gray-500 ml-1 mb-0.5 block">${data.user_name}</span>`;
+          var bubbleClass = isMe ? "bg-roadmapper-blue text-white" : "bg-white border border-gray-200 text-gray-800";
+          var roundedClass = isMe ? "rounded-2xl rounded-tr-sm" : "rounded-2xl rounded-tl-sm";
+
+          msgDiv.innerHTML = `
+            ${nameHtml}
+            <div class="px-3 py-2 ${bubbleClass} ${roundedClass} shadow-sm inline-block break-words">
+              ${data.message}
+            </div>
+          `;
+
+          var chatMsgs = document.getElementById("chat-messages");
+          if (chatMsgs) {
+            chatMsgs.appendChild(msgDiv);
+            chatMsgs.scrollTop = chatMsgs.scrollHeight;
+          }
+      });
+
+      var chatForm = document.getElementById("chat-form");
+      var chatInput = document.getElementById("chat-input");
+      if (chatForm && chatInput) {
+        chatForm.addEventListener("submit", function(e) {
+          e.preventDefault();
+          var msg = chatInput.value.trim();
+          if (msg) {
+            socket.emit('send_message', {invite_code: inviteCode, user_name: userName, message: msg});
+            chatInput.value = "";
+          }
+        });
+      }
       var base = "/api/trips/" + encodeURIComponent(inviteCode);
       var days = [{% for d in days %}{ id: {{ d.id }}, date: "{{ d.date.isoformat() }}", order: {{ loop.index }} }{% if not loop.last %}, {% endif %}{% endfor %}];
 
@@ -383,10 +700,40 @@
           if (!b) return;
           var el = document.getElementById("budget-summary");
           if (!el) return;
-          var overClass = b.over_budget ? "bg-red-50 border-red-200" : "bg-green-50 border-green-200";
-          var remText = b.over_budget ? ("Over budget by $" + String(b.remaining).replace("-", "")) : ("Remaining: <span class=\"text-green-700\">$" + b.remaining + "</span>");
-          el.className = "text-sm rounded-sm border mb-3 p-3 " + overClass;
-          el.innerHTML = '<p class="font-semibold text-gray-900 mb-1">Budget tracker</p><p class="text-gray-700 mb-0.5">Total budget: $' + b.total_budget + '</p><p class="text-gray-700 mb-0.5">Spent: $' + b.spent + ' <span class="text-gray-500">(Flights $' + b.flights_total + ' + Hotels $' + b.hotels_total + ' + Activities $' + b.activities_total + ')</span></p><p class="font-semibold text-gray-900 mt-1 mb-0">' + (b.over_budget ? '<span class="text-red-700">' + remText + '</span>' : remText) + '</p>';
+
+          var overClass = b.over_budget ? "bg-red-50/50 border-red-100" : "bg-green-50/50 border-green-100";
+          var badgeClass = b.over_budget ? "bg-red-100 text-red-700" : "bg-green-100 text-roadmapper-green";
+          var badgeText = b.over_budget ? "Over Budget" : "On Track";
+
+          var tBudget = parseFloat(b.total_budget) || 1;
+          var tSpent = parseFloat(b.spent) || 0;
+          var percent = Math.min(Math.round((tSpent / tBudget) * 100), 100);
+          var barColor = b.over_budget ? "bg-red-500" : "bg-roadmapper-green";
+
+          var bottomText = b.over_budget
+            ? '<p class="font-bold text-sm mt-3 mb-0 text-center text-red-600">Over by $' + String(b.remaining).replace("-", "") + '</p>'
+            : '<p class="font-bold text-sm mt-3 mb-0 text-center text-roadmapper-green">$' + b.remaining + ' Remaining</p>';
+
+          el.className = "mb-6 p-4 rounded-2xl border " + overClass;
+          el.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="font-bold text-gray-900 text-sm">Budget tracker</h3>
+              <span class="text-xs font-semibold px-2 py-1 rounded-full ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
+              <div class="${barColor} h-2.5 rounded-full" style="width: ${percent}%"></div>
+            </div>
+            <div class="flex justify-between text-sm mb-3">
+              <span class="text-gray-500">Spent: <span class="font-bold text-gray-900">$${b.spent}</span></span>
+              <span class="text-gray-500">Total: <span class="font-bold text-gray-900">$${b.total_budget}</span></span>
+            </div>
+            <div class="text-xs text-gray-500 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
+              <div class="flex justify-between mb-1"><span>Flights</span><span>$${b.flights_total}</span></div>
+              <div class="flex justify-between mb-1"><span>Hotels</span><span>$${b.hotels_total}</span></div>
+              <div class="flex justify-between"><span>Activities</span><span>$${b.activities_total}</span></div>
+            </div>
+            ${bottomText}
+          `;
         }).catch(function () {});
       }
 
@@ -748,10 +1095,26 @@
       var saveDescBtn = document.getElementById("save-description-btn");
       var cancelDescBtn = document.getElementById("cancel-description-btn");
       var tripDescription = document.getElementById("trip-description");
+
+      window.copyInviteLink = function() {
+        var linkText = document.getElementById("invite-link").textContent;
+        navigator.clipboard.writeText(linkText).then(function() {
+          var btnText = document.getElementById("copy-link-text");
+          if (btnText) {
+            btnText.textContent = "Copied!";
+            setTimeout(function() { btnText.textContent = "Copy Invite"; }, 2000);
+          }
+        });
+      };
+
       if (addDescBtn && writeDescSection) {
         addDescBtn.addEventListener("click", function () {
-          if (descriptionInput) descriptionInput.value = tripDescription ? tripDescription.textContent : "";
-          writeDescSection.hidden = false;
+          if (writeDescSection.hidden) {
+            if (descriptionInput) descriptionInput.value = tripDescription ? tripDescription.textContent : "";
+            writeDescSection.hidden = false;
+          } else {
+            writeDescSection.hidden = true;
+          }
         });
       }
       if (cancelDescBtn && writeDescSection) {
@@ -861,7 +1224,7 @@
                 if (list && list.children.length === 0) {
                   var p = document.createElement("p");
                   p.id = "collaborators-empty";
-                  p.className = "text-gray-500 italic";
+                  p.className = "text-white/50 text-sm italic mb-5 text-center py-4 bg-black/10 rounded-xl border border-white/5";
                   p.textContent = "No one has joined yet.";
                   list.parentNode.replaceChild(p, list);
                 }
@@ -898,15 +1261,16 @@
                 if (!list && empty) {
                   var ul = document.createElement("ul");
                   ul.id = "collaborators-list";
-                  ul.className = "space-y-1 mb-4";
+                  ul.className = "space-y-1.5 mb-5 max-h-48 overflow-y-auto pr-1 custom-scrollbar";
                   empty.parentNode.replaceChild(ul, empty);
                   list = ul;
                 }
                 if (list) {
                   var li = document.createElement("li");
-                  li.className = "collaborator-item flex justify-between items-center py-1 text-gray-600";
+                  li.className = "collaborator-item flex justify-between items-center py-2 px-3 hover:bg-white/10 rounded-xl transition-colors border border-transparent";
                   li.setAttribute("data-collaborator-id", c.id);
-                  li.innerHTML = "<span>" + c.name + "</span><span class=\"font-semibold text-gray-900\">$" + parseFloat(c.budget).toFixed(2) + "</span>";
+                  var initial = c.name ? c.name.charAt(0).toUpperCase() : "U";
+                  li.innerHTML = `<div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-white text-roadmapper-blue flex items-center justify-center text-xs font-bold shadow-sm">${initial}</div><span class="text-sm font-medium text-white">${c.name}</span></div><span class="font-bold text-white/90 text-sm">$${parseFloat(c.budget).toFixed(2)}</span>`;
                   list.appendChild(li);
                 }
                 var countEl = document.getElementById("collaborators-count");
@@ -1002,34 +1366,47 @@
           if (!id) return "";
           var c = count || 0;
           if (hasVoted) {
-            return '<span class="suggestion-voted mt-3 sm:mt-0 px-2 py-1 rounded-sm border border-green-300 bg-green-50 text-green-700 text-sm inline-block" data-id="' + id + '">👍 <span class="vote-count">' + c + '</span> <span class="text-xs">Voted</span></span>';
+            return '<span class="suggestion-voted px-3 py-2.5 rounded-xl border border-green-300 bg-green-50 text-green-700 text-sm inline-flex items-center justify-center shadow-sm" data-id="' + id + '">👍 <span class="vote-count ml-1">' + c + '</span></span>';
           }
-          return '<button type="button" class="suggestion-vote-btn mt-3 sm:mt-0 px-2 py-1 rounded-sm border border-gray-300 hover:bg-gray-50 text-sm" data-id="' + id + '" title="Upvote">👍 <span class="vote-count">' + c + '</span></button>';
+          return '<button type="button" class="suggestion-vote-btn px-3 py-2.5 rounded-xl border border-gray-300 hover:bg-gray-50 text-sm inline-flex items-center justify-center transition-colors shadow-sm bg-white" data-id="' + id + '" title="Upvote">👍 <span class="vote-count ml-1 text-gray-700">' + c + '</span></button>';
+        }
+
+        function dismissBtnHtml() {
+           return '<button type="button" class="dismiss-suggestion-btn absolute top-3 right-3 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Dismiss suggestion"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>';
         }
         
         if (flights.length > 0 && flightList) {
-          flightList.innerHTML = "<h4 class=\"text-lg font-bold text-gray-900 mb-3\">Flights</h4>";
-          flights.forEach(function (o) {
+          flightList.innerHTML = "<h4 class=\"col-span-full text-xl font-bold text-gray-900 border-b border-gray-100 pb-2\">Flights</h4>";
+          flights.forEach(function (o, i) {
             var flightNum = o.flight_number ? " " + o.flight_number : "";
             var typeLabel = (o.trip_type === "one_way" || o.departure_date === o.return_date) ? "One-way" : "Round-trip";
-            var linkHtml = o.link ? "<a href=\"" + o.link + "\" target=\"_blank\" rel=\"noopener\" class=\"inline-block mt-2 sm:mt-0 sm:ml-4 text-[#007FAF] hover:text-[#006A93] font-semibold hover:underline\">Search Flight →</a>" : "";
+            var linkHtml = o.link ? "<a href=\"" + o.link + "\" target=\"_blank\" rel=\"noopener\" class=\"w-full text-center py-2.5 text-roadmapper-blue border border-roadmapper-blue rounded-xl font-semibold hover:bg-blue-50 transition-colors text-sm\">Search Deals &rarr;</a>" : "";
             var voteHtml = voteBtnHtml(o.id, o.vote_count, o.user_has_voted);
+            var bestValueTag = (i === 0) ? '<span class="absolute -top-3 -right-3 bg-roadmapper-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm transform rotate-3">Best Value</span>' : '';
             
             var div = document.createElement("div");
-            div.className = "flex flex-col sm:flex-row bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow";
+            div.className = "relative flex flex-col bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group";
             div.innerHTML = `
-              <div class="hidden sm:flex sm:w-32 bg-gray-100 items-center justify-center border-r border-gray-200">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
-              </div>
-              <div class="p-4 flex-1 flex flex-col justify-center">
-                <div class="flex justify-between items-start mb-1">
-                  <h5 class="text-base font-bold text-gray-900 m-0">${typeLabel} · ${o.airline || "Flight"}${flightNum}</h5>
-                  <span class="text-lg font-bold text-gray-900">$${parseFloat(o.cost_estimate).toFixed(2)}</span>
+              ${bestValueTag}
+              ${dismissBtnHtml()}
+              <div class="flex items-start justify-between mb-4 mt-2">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-roadmapper-blue flex items-center justify-center shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9.5V5.782c0-.821.326-1.608.906-2.188a1.547 1.547 0 0 1 2.188 0c.58.58.906 1.367.906 2.188V9.5l6.496 3.712a1 1 0 0 1 .504.868v1.42l-7-2v4l1.055.703a1 1 0 0 1 .445.832V21l-3.225-.922a1 1 0 0 0-.55 0L8.5 21v-1.965a1 1 0 0 1 .445-.832L10 17.5v-4l-7 2v-1.42a1 1 0 0 1 .504-.868L10 9.5Z"></path></svg>
                 </div>
-                <p class="text-sm text-gray-600 m-0">${o.description}</p>
-                <div class="mt-3 flex flex-wrap gap-2 items-center">
-                  ${linkHtml}
-                  <button type="button" class="save-flight-btn bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors text-sm">Save flight</button>
+                <div class="text-right">
+                  <span class="block text-2xl font-extrabold text-gray-900">$${parseFloat(o.cost_estimate).toFixed(0)}</span>
+                  <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">per person</span>
+                </div>
+              </div>
+              <div class="flex-1 mb-6">
+                <h5 class="text-lg font-bold text-gray-900 m-0 mb-1">${o.airline || "Flight"}${flightNum}</h5>
+                <p class="text-sm font-medium text-roadmapper-blue mb-2">${typeLabel}</p>
+                <p class="text-sm text-gray-600 line-clamp-3">${o.description}</p>
+              </div>
+              <div class="flex flex-col gap-2">
+                ${linkHtml}
+                <div class="flex items-center gap-2">
+                  <button type="button" class="save-flight-btn flex-1 bg-white text-roadmapper-blue border border-roadmapper-blue hover:bg-blue-50 font-semibold py-2.5 rounded-xl transition-colors text-sm shadow-sm">Save to Trip</button>
                   ${voteHtml}
                 </div>
               </div>
@@ -1064,26 +1441,34 @@
         }
         
         if (hotels.length > 0 && hotelList) {
-          hotelList.innerHTML = "<h4 class=\"text-lg font-bold text-gray-900 mb-3\">Hotels</h4>";
-          hotels.forEach(function (o) {
-            var linkHtml = o.link ? "<a href=\"" + o.link + "\" target=\"_blank\" rel=\"noopener\" class=\"inline-block mt-2 sm:mt-0 sm:ml-4 text-[#007FAF] hover:text-[#006A93] font-semibold hover:underline\">Search Hotel →</a>" : "";
+          hotelList.innerHTML = "<h4 class=\"col-span-full text-xl font-bold text-gray-900 border-b border-gray-100 pb-2\">Hotels</h4>";
+          hotels.forEach(function (o, i) {
+            var linkHtml = o.link ? "<a href=\"" + o.link + "\" target=\"_blank\" rel=\"noopener\" class=\"w-full text-center py-2.5 text-roadmapper-green border border-roadmapper-green rounded-xl font-semibold hover:bg-green-50 transition-colors text-sm\">Check Availability &rarr;</a>" : "";
             var voteHtml = voteBtnHtml(o.id, o.vote_count, o.user_has_voted);
+            var bestValueTag = (i === 0) ? '<span class="absolute -top-3 -right-3 bg-roadmapper-orange text-white text-xs font-bold px-3 py-1 rounded-full shadow-sm transform rotate-3">Top Pick</span>' : '';
             
             var div = document.createElement("div");
-            div.className = "flex flex-col sm:flex-row bg-white border border-gray-200 rounded-md overflow-hidden shadow-sm hover:shadow-md transition-shadow";
+            div.className = "relative flex flex-col bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-md transition-shadow group";
             div.innerHTML = `
-              <div class="hidden sm:flex sm:w-32 bg-gray-100 items-center justify-center border-r border-gray-200">
-                <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-              </div>
-              <div class="p-4 flex-1 flex flex-col justify-center">
-                <div class="flex justify-between items-start mb-1">
-                  <h5 class="text-base font-bold text-gray-900 m-0">${o.name}</h5>
-                  <span class="text-lg font-bold text-gray-900">$${parseFloat(o.cost_estimate).toFixed(2)}</span>
+              ${bestValueTag}
+              ${dismissBtnHtml()}
+              <div class="flex items-start justify-between mb-4 mt-2">
+                <div class="w-12 h-12 rounded-xl bg-green-50 text-roadmapper-green flex items-center justify-center shrink-0">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
                 </div>
-                <p class="text-sm text-gray-600 m-0">${o.description || ""}</p>
-                <div class="mt-3 flex flex-wrap gap-2 items-center">
-                  ${linkHtml}
-                  <button type="button" class="save-hotel-btn bg-[#007FAF] hover:bg-[#006A93] text-white font-semibold py-2 px-4 rounded-sm transition-colors text-sm">Save hotel</button>
+                <div class="text-right">
+                  <span class="block text-2xl font-extrabold text-gray-900">$${parseFloat(o.cost_estimate).toFixed(0)}</span>
+                  <span class="text-xs font-medium text-gray-500 uppercase tracking-wide">per night</span>
+                </div>
+              </div>
+              <div class="flex-1 mb-6">
+                <h5 class="text-lg font-bold text-gray-900 m-0 mb-2">${o.name}</h5>
+                <p class="text-sm text-gray-600 line-clamp-3">${o.description || ""}</p>
+              </div>
+              <div class="flex flex-col gap-2">
+                ${linkHtml}
+                <div class="flex items-center gap-2">
+                  <button type="button" class="save-hotel-btn flex-1 bg-white text-roadmapper-green border border-roadmapper-green hover:bg-green-50 font-semibold py-2.5 rounded-xl transition-colors text-sm shadow-sm">Save to Trip</button>
                   ${voteHtml}
                 </div>
               </div>
@@ -1111,6 +1496,16 @@
                   });
               });
             }
+
+            var dismissBtn = div.querySelector(".dismiss-suggestion-btn");
+            if (dismissBtn) {
+              dismissBtn.addEventListener("click", function() {
+                div.style.opacity = "0";
+                div.style.transform = "scale(0.95)";
+                setTimeout(function() { div.remove(); }, 200);
+              });
+            }
+
             hotelList.appendChild(div);
           });
         }

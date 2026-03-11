@@ -53,7 +53,10 @@ from persistence.sqlite.models import UserModel
 from persistence.sqlite.trip_repository import SqliteTripRepository
 from web.routes.auth import bp as auth_bp
 from web.routes.trips import create_trips_blueprint
+from flask_socketio import SocketIO, emit, join_room, leave_room
 
+
+socketio = SocketIO(cors_allowed_origins="*")
 
 def _run_migrations(app: Flask) -> None:
     """Apply Alembic migrations for file-based DBs. Use create_all for in-memory (tests)."""
@@ -102,6 +105,7 @@ def create_app() -> Flask:
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret-change-in-production")
 
     db.init_app(app)
+    socketio.init_app(app)
     with app.app_context():
         _run_migrations(app)
 
@@ -269,6 +273,34 @@ def create_app() -> Flask:
             joined_trips=joined,
         )
 
+    # SocketIO events for Real-Time Chat
+    @socketio.on("join_trip")
+    def on_join(data):
+        invite_code = data.get("invite_code")
+        if not invite_code:
+            return
+        join_room(invite_code)
+
+    @socketio.on("leave_trip")
+    def on_leave(data):
+        invite_code = data.get("invite_code")
+        if not invite_code:
+            return
+        leave_room(invite_code)
+
+    @socketio.on("send_message")
+    def on_send_message(data):
+        invite_code = data.get("invite_code")
+        user_name = data.get("user_name", "Anonymous")
+        message = data.get("message")
+        if not invite_code or not message:
+            return
+        emit("receive_message", {
+            "user_name": user_name,
+            "message": message,
+            "timestamp": dt.utcnow().isoformat()
+        }, to=invite_code)
+
     return app
 
 
@@ -292,4 +324,4 @@ def _format_activity_time(value: Optional[str]) -> str:
 app.jinja_env.filters["format_time"] = _format_activity_time
 
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    socketio.run(app, debug=True, port=5000, allow_unsafe_werkzeug=True)
