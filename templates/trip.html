@@ -33,20 +33,179 @@
 <body class="bg-roadmapper-bg font-sans text-gray-900 antialiased min-h-screen flex flex-col md:flex-row" data-user-name="{{ user_display_name|e }}" data-my-collab-id="{{ my_collaborator_id or '' }}">
 
   <!-- Sidebar Navigation -->
-  <aside class="w-full md:w-64 bg-roadmapper-blue text-white flex flex-col sticky top-0 md:h-screen z-10 shrink-0">
-    <div class="p-6 border-b border-white/20">
+  <aside class="w-full md:w-80 bg-roadmapper-blue text-white flex flex-col sticky top-0 md:h-screen z-10 shrink-0 overflow-y-auto custom-scrollbar">
+    <div class="p-6 border-b border-white/20 shrink-0">
       <h1 class="text-2xl font-bold tracking-tight m-0">
         <a href="/" class="text-white no-underline hover:opacity-80">RoadMapper</a>
       </h1>
     </div>
-    <nav class="flex-1 p-4 flex flex-col gap-2 text-sm">
-      <a href="/my-trips" class="flex items-center gap-2 px-4 py-2 rounded-md bg-white/10 hover:bg-white/20 transition-colors font-medium text-white no-underline">
+
+    <nav class="p-4 flex flex-col gap-2 text-sm shrink-0 border-b border-white/10">
+      <a href="/my-trips" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-colors font-medium text-white no-underline">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-        My trips
+        Back to my trips
       </a>
     </nav>
-    <div class="p-4 border-t border-white/20">
-      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-md hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm">
+
+    <!-- Sidebar Core Components -->
+    <div class="flex-1 p-4 flex flex-col gap-6 overflow-y-auto">
+
+      <!-- Trip Views & Progress -->
+      <section id="sidebar-nav" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <h2 class="text-base font-bold text-white mb-4 flex items-center">
+          <svg class="w-5 h-5 mr-2 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
+          Trip Views
+        </h2>
+        <nav class="flex flex-col gap-1.5 mb-5">
+          <button class="sidebar-tab-btn active text-left px-4 py-2 rounded-xl font-medium text-roadmapper-blue bg-white transition-colors" data-target="all">All Items</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="flight">Flights</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="hotel">Hotels</button>
+          <button class="sidebar-tab-btn text-left px-4 py-2 rounded-xl font-medium text-white hover:bg-white/10 transition-colors" data-target="itinerary">Itinerary</button>
+        </nav>
+
+        <div class="mt-2 pt-4 border-t border-white/10 flex items-center justify-between">
+          <div class="flex flex-col">
+            <span class="text-xs text-white/60 font-bold uppercase tracking-wider mb-1">Trip Progress</span>
+            <span id="progress-text" class="text-2xl font-extrabold text-white">0%</span>
+          </div>
+          <div class="relative w-12 h-12">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+              <!-- Background Circle -->
+              <path class="text-white/10" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+              <!-- Progress Circle -->
+              <path id="progress-circle" class="text-roadmapper-green transition-all duration-500 ease-in-out" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="currentColor" stroke-width="3" />
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Budget Summary -->
+      {% if budget_summary %}
+      <section id="budget-summary" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-base font-bold text-white flex items-center">Budget Tracker</h2>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full {% if budget_summary.over_budget %}bg-red-500/20 text-red-300{% else %}bg-roadmapper-green/20 text-green-300{% endif %}">
+            {% if budget_summary.over_budget %}Over Budget{% else %}On Track{% endif %}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between bg-black/20 rounded-full p-1 border border-white/10 mb-4 text-xs font-medium">
+          <button id="budget-toggle-total" class="flex-1 px-3 py-1.5 rounded-full bg-white text-roadmapper-blue transition-colors">Total</button>
+          <button id="budget-toggle-person" class="flex-1 px-3 py-1.5 rounded-full text-white/70 hover:text-white transition-colors">/ Person</button>
+        </div>
+
+        <div class="w-full bg-black/20 rounded-full h-2 mb-3 overflow-hidden border border-white/5">
+          {% set t_budget = budget_summary.total_budget|float %}
+          {% set percent = 0 %}
+          {% if t_budget > 0 %}
+            {% set percent = (budget_summary.spent|float / t_budget * 100)|round|int %}
+          {% endif %}
+          {% set bar_color = "bg-red-500" if budget_summary.over_budget else "bg-roadmapper-green" %}
+          <div class="{{ bar_color }} h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]" style="width: {{ [percent, 100]|min }}%"></div>
+        </div>
+
+        <div class="flex justify-between text-sm mb-4">
+          <span class="text-white/70">Spent: <span id="budget-spent" class="font-bold text-white" data-total="{{ budget_summary.spent }}">${{ budget_summary.spent }}</span></span>
+          <span class="text-white/70">Total: <span id="budget-total" class="font-bold text-white" data-total="{{ budget_summary.total_budget }}">${{ budget_summary.total_budget }}</span></span>
+        </div>
+
+        <div class="text-xs text-white/80 bg-black/10 p-3 rounded-xl border border-white/10">
+          <div class="flex justify-between mb-1.5"><span>Flights</span><span id="budget-flights" class="font-medium" data-total="{{ budget_summary.flights_total }}">${{ budget_summary.flights_total }}</span></div>
+          <div class="flex justify-between mb-1.5"><span>Hotels</span><span id="budget-hotels" class="font-medium" data-total="{{ budget_summary.hotels_total }}">${{ budget_summary.hotels_total }}</span></div>
+          <div class="flex justify-between"><span>Activities</span><span id="budget-activities" class="font-medium" data-total="{{ budget_summary.activities_total }}">${{ budget_summary.activities_total }}</span></div>
+        </div>
+
+        <p id="budget-remaining-text" class="font-bold text-sm mt-4 mb-0 text-center {% if budget_summary.over_budget %}text-red-300{% else %}text-green-300{% endif %}" data-remaining="{{ budget_summary.remaining|replace('-', '') }}" data-over="{{ 'true' if budget_summary.over_budget else 'false' }}">
+          {% if budget_summary.over_budget %}
+            Over by $<span class="budget-remaining-val">{{ budget_summary.remaining|replace('-', '') }}</span>
+          {% else %}
+            $<span class="budget-remaining-val">{{ budget_summary.remaining }}</span> Remaining
+          {% endif %}
+        </p>
+      </section>
+      {% endif %}
+
+      <!-- Trip Members -->
+      <section id="collaborators-section" class="bg-white/5 rounded-2xl border border-white/10 p-5 flex flex-col">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-base font-bold text-white flex items-center">
+            <svg class="w-5 h-5 mr-2 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            Members (<span id="collaborators-count">{{ collaborators|length }}</span>)
+          </h2>
+          {% if is_owner %}
+          <button type="button" id="edit-members-btn" class="p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors" title="Edit members (remove travelers)" aria-label="Edit members">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+          </button>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center text-white/90 bg-black/20 px-3 py-2.5 rounded-xl border border-white/5 mb-5 text-sm font-medium">
+          <div class="w-7 h-7 rounded-full bg-roadmapper-green border border-green-500/30 flex items-center justify-center mr-2 shadow-sm shrink-0">
+            <span class="text-white font-bold text-xs">$</span>
+          </div>
+          <span class="truncate">${{ "%.2f"|format(trip.per_person_budget) }} / person</span>
+        </div>
+
+        {% if collaborators %}
+        <ul id="collaborators-list" class="space-y-1.5 mb-5 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+          {% for c in collaborators %}
+          <li class="collaborator-item flex justify-between items-center py-2 px-3 hover:bg-white/10 rounded-xl transition-colors border border-transparent" data-collaborator-id="{{ c.id }}">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-white text-roadmapper-blue flex items-center justify-center text-xs font-bold shadow-sm">{{ c.name[:1]|upper }}</div>
+              <span class="text-sm font-medium text-white">{{ c.name }}</span>
+            </div>
+            <span class="font-bold text-white/90 text-sm">${{ "%.2f"|format(c.budget) }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+        {% else %}
+        <p id="collaborators-empty" class="text-white/50 text-sm italic mb-5 text-center py-4 bg-black/10 rounded-xl border border-white/5">No one has joined yet.</p>
+        {% endif %}
+
+        <div class="mt-auto flex flex-col gap-2">
+          <button type="button" id="add-traveler-btn" class="w-full bg-white hover:bg-gray-100 text-roadmapper-blue font-bold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Traveler
+          </button>
+          {% if my_collaborator_id and not is_owner %}
+          <button type="button" id="leave-trip-btn" class="w-full bg-transparent hover:bg-red-500/20 text-red-300 font-semibold py-2.5 px-4 rounded-xl transition-colors">Leave trip</button>
+          {% endif %}
+        </div>
+      </section>
+
+      <!-- Chat Widget -->
+      <section id="chat-section" class="bg-white/5 rounded-2xl border border-white/10 flex flex-col overflow-hidden shrink-0">
+        <div class="px-5 py-3.5 flex items-center justify-between cursor-pointer hover:bg-white/5 transition-colors border-b border-white/10" onclick="document.getElementById('chat-body').classList.toggle('hidden')">
+          <h2 class="text-white font-bold text-sm flex items-center gap-2 m-0">
+            <svg class="w-4 h-4 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+            Trip Chat
+          </h2>
+          <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+        <div id="chat-body" class="flex flex-col h-64 hidden bg-white">
+          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-roadmapper-bg text-sm custom-scrollbar">
+            <!-- Messages go here -->
+            <p class="text-center text-xs text-gray-400 italic mt-2">Welcome to the trip chat!</p>
+          </div>
+          <form id="chat-form" class="border-t border-gray-200 p-3 flex gap-2">
+            <input type="text" id="chat-input" class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:bg-white focus:border-roadmapper-blue focus:ring-1 focus:ring-roadmapper-blue transition-all text-gray-900" placeholder="Type a message..." required />
+            <button type="submit" class="bg-roadmapper-blue text-white rounded-xl w-10 h-10 flex items-center justify-center shrink-0 hover:bg-[#006A93] transition-colors shadow-sm">
+              <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- Sidebar Footer -->
+    <div class="p-4 border-t border-white/10 shrink-0">
+      <div class="px-4 py-2 mb-2 text-xs font-semibold text-white/60 uppercase tracking-wider truncate" title="{{ current_user.email }}">{{ current_user.email }}</div>
+      <a href="{{ url_for('auth.profile') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm mb-1">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+        Profile Settings
+      </a>
+      <a href="{{ url_for('auth.logout') }}" class="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/10 transition-colors font-medium text-white/80 hover:text-white no-underline text-sm">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
         Log out
       </a>
@@ -54,9 +213,9 @@
   </aside>
 
   <!-- Main Content Canvas -->
-  <main class="flex-1 p-4 md:p-8 md:max-w-6xl mx-auto w-full">
+  <main class="flex-1 p-4 md:p-8 w-full overflow-x-hidden">
     <!-- Hero Card & Action Row -->
-    <section class="relative bg-gradient-to-br from-roadmapper-blue/10 to-transparent rounded-2xl shadow-sm border border-gray-200 mb-8 p-8 overflow-hidden">
+    <section class="relative bg-gradient-to-br from-roadmapper-blue/10 to-transparent rounded-2xl shadow-sm border border-gray-200 mb-8 p-8 overflow-hidden w-full">
       <div class="absolute top-0 left-0 w-full h-1 bg-roadmapper-blue"></div>
 
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
@@ -110,175 +269,8 @@
       <p id="description-error" class="text-red-500 text-sm mt-3 font-medium text-right" hidden></p>
     </section>
 
-    <!-- Main Grid Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-
-      <!-- Left Column: Travelers & Budget (Sticky) -->
-      <div class="lg:col-span-1 lg:sticky lg:top-8 flex flex-col gap-6">
-
-        <section id="sidebar-nav" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col mb-6">
-          <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg>
-            Trip Views
-          </h2>
-          <nav class="flex flex-col gap-2 mb-6">
-            <button class="sidebar-tab-btn active text-left px-4 py-2 rounded-lg font-medium text-gray-900 bg-gray-100 hover:bg-gray-200 transition-colors" data-target="all">All Items</button>
-            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="flight">Flights</button>
-            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="hotel">Hotels</button>
-            <button class="sidebar-tab-btn text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors" data-target="itinerary">Itinerary</button>
-          </nav>
-
-          <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-            <div class="flex flex-col">
-              <span class="text-xs text-gray-500 font-bold uppercase tracking-wider mb-1">Trip Progress</span>
-              <span id="progress-text" class="text-xl font-extrabold text-gray-900">0%</span>
-            </div>
-            <div class="relative w-12 h-12">
-              <svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                <!-- Background Circle -->
-                <path
-                  class="text-gray-100"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                />
-                <!-- Progress Circle -->
-                <path
-                  id="progress-circle"
-                  class="text-roadmapper-green transition-all duration-500 ease-in-out"
-                  stroke-dasharray="0, 100"
-                  d="M18 2.0845
-                    a 15.9155 15.9155 0 0 1 0 31.831
-                    a 15.9155 15.9155 0 0 1 0 -31.831"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="3"
-                />
-              </svg>
-            </div>
-          </div>
-        </section>
-
-        <section id="collaborators-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-bold text-gray-900 flex items-center">
-            <svg class="w-5 h-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            Trip members (<span id="collaborators-count">{{ collaborators|length }}</span>)
-          </h2>
-          {% if is_owner %}
-          <button type="button" id="edit-members-btn" class="p-1.5 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" title="Edit members (remove travelers)" aria-label="Edit members">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-          </button>
-          {% endif %}
-        </div>
-        
-        <div class="flex items-center text-gray-700 bg-gray-50 px-3 py-2.5 rounded-xl border border-gray-200 mb-5 text-sm font-medium">
-          <div class="w-6 h-6 rounded-full bg-white border border-gray-200 flex items-center justify-center mr-2 shadow-sm shrink-0">
-            <span class="text-gray-500 font-bold text-xs">$</span>
-          </div>
-          <span class="truncate">${{ "%.2f"|format(trip.per_person_budget) }} / person &middot; {{ trip.num_people }} people</span>
-        </div>
-
-        {% if budget_summary %}
-        <div id="budget-summary" class="mb-6 p-4 rounded-2xl border {% if budget_summary.over_budget %}bg-red-50/50 border-red-100{% else %}bg-green-50/50 border-green-100{% endif %}">
-          <div class="flex justify-between items-center mb-3">
-            <h3 class="font-bold text-gray-900 text-sm">Budget tracker</h3>
-            <div class="flex items-center bg-white rounded-full p-1 border border-gray-200 shadow-sm text-xs font-medium">
-              <button id="budget-toggle-total" class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-900 transition-colors">Total</button>
-              <button id="budget-toggle-person" class="px-2 py-0.5 rounded-full text-gray-500 hover:text-gray-900 transition-colors">/ Person</button>
-            </div>
-            <span class="text-xs font-semibold px-2 py-1 rounded-full {% if budget_summary.over_budget %}bg-red-100 text-red-700{% else %}bg-green-100 text-roadmapper-green{% endif %}">
-              {% if budget_summary.over_budget %}Over Budget{% else %}On Track{% endif %}
-            </span>
-          </div>
-
-          <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2 overflow-hidden">
-            {% set t_budget = budget_summary.total_budget|float %}
-            {% set percent = 0 %}
-            {% if t_budget > 0 %}
-              {% set percent = (budget_summary.spent|float / t_budget * 100)|round|int %}
-            {% endif %}
-            {% set bar_color = "bg-red-500" if budget_summary.over_budget else "bg-roadmapper-green" %}
-            <div class="{{ bar_color }} h-2.5 rounded-full" style="width: {{ [percent, 100]|min }}%"></div>
-          </div>
-
-          <div class="flex justify-between text-sm mb-3">
-            <span class="text-gray-500">Spent: <span id="budget-spent" class="font-bold text-gray-900" data-total="{{ budget_summary.spent }}">${{ budget_summary.spent }}</span></span>
-            <span class="text-gray-500">Total: <span id="budget-total" class="font-bold text-gray-900" data-total="{{ budget_summary.total_budget }}">${{ budget_summary.total_budget }}</span></span>
-          </div>
-
-          <div class="text-xs text-gray-500 bg-white p-2.5 rounded-xl border border-gray-100 shadow-sm">
-            <div class="flex justify-between mb-1"><span>Flights</span><span id="budget-flights" data-total="{{ budget_summary.flights_total }}">${{ budget_summary.flights_total }}</span></div>
-            <div class="flex justify-between mb-1"><span>Hotels</span><span id="budget-hotels" data-total="{{ budget_summary.hotels_total }}">${{ budget_summary.hotels_total }}</span></div>
-            <div class="flex justify-between"><span>Activities</span><span id="budget-activities" data-total="{{ budget_summary.activities_total }}">${{ budget_summary.activities_total }}</span></div>
-          </div>
-
-          <p id="budget-remaining-text" class="font-bold text-sm mt-3 mb-0 text-center {% if budget_summary.over_budget %}text-red-600{% else %}text-roadmapper-green{% endif %}" data-remaining="{{ budget_summary.remaining|replace('-', '') }}" data-over="{{ 'true' if budget_summary.over_budget else 'false' }}">
-            {% if budget_summary.over_budget %}
-              Over by $<span class="budget-remaining-val">{{ budget_summary.remaining|replace('-', '') }}</span>
-            {% else %}
-              $<span class="budget-remaining-val">{{ budget_summary.remaining }}</span> Remaining
-            {% endif %}
-          </p>
-        </div>
-        {% endif %}
-        
-        {% if collaborators %}
-        <ul id="collaborators-list" class="space-y-2 mb-6 max-h-48 overflow-y-auto pr-1">
-          {% for c in collaborators %}
-          <li class="collaborator-item flex justify-between items-center py-2 px-3 hover:bg-gray-50 rounded-xl transition-colors border border-transparent" data-collaborator-id="{{ c.id }}">
-            <div class="flex items-center gap-2">
-              <div class="w-7 h-7 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-xs font-bold text-gray-600">{{ c.name[:1]|upper }}</div>
-              <span class="text-sm font-medium text-gray-700">{{ c.name }}</span>
-            </div>
-            <span class="font-bold text-gray-900 text-sm">${{ "%.2f"|format(c.budget) }}</span>
-          </li>
-          {% endfor %}
-        </ul>
-        {% else %}
-        <p id="collaborators-empty" class="text-gray-500 text-sm italic mb-6 text-center py-4 bg-gray-50 rounded-xl border border-gray-100">No one has joined yet.</p>
-        {% endif %}
-
-        <div class="mt-auto flex flex-col gap-2">
-          <button type="button" id="add-traveler-btn" class="w-full bg-roadmapper-green hover:bg-[#326032] text-white font-semibold py-2.5 px-4 rounded-xl transition-all shadow-sm flex items-center justify-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Add Traveler
-          </button>
-          {% if my_collaborator_id and not is_owner %}
-          <button type="button" id="leave-trip-btn" class="w-full bg-transparent hover:bg-red-50 text-red-600 font-semibold py-2.5 px-4 rounded-xl transition-colors">Leave trip</button>
-          {% endif %}
-        </div>
-      </section>
-
-      <!-- Chat Widget -->
-      <section id="chat-section" class="bg-white rounded-2xl shadow-sm border border-gray-200 p-0 flex flex-col overflow-hidden">
-        <div class="bg-roadmapper-blue px-4 py-3 flex items-center justify-between cursor-pointer" onclick="document.getElementById('chat-body').classList.toggle('hidden')">
-          <h2 class="text-white font-bold text-sm flex items-center gap-2 m-0">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-            Trip Chat
-          </h2>
-          <svg class="w-4 h-4 text-white opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-        </div>
-        <div id="chat-body" class="flex flex-col h-64 hidden">
-          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 flex flex-col gap-3 bg-gray-50 text-sm">
-            <!-- Messages go here -->
-            <p class="text-center text-xs text-gray-400 italic mt-2">Welcome to the trip chat!</p>
-          </div>
-          <form id="chat-form" class="border-t border-gray-200 p-3 bg-white flex gap-2">
-            <input type="text" id="chat-input" class="flex-1 border border-gray-300 rounded-full px-3 py-1.5 text-sm focus:outline-none focus:border-roadmapper-blue focus:ring-1 focus:ring-roadmapper-blue" placeholder="Type a message..." required />
-            <button type="submit" class="bg-roadmapper-blue text-white rounded-full w-8 h-8 flex items-center justify-center shrink-0 hover:bg-[#006A93] transition-colors">
-              <svg class="w-4 h-4 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-            </button>
-          </form>
-        </div>
-      </section>
-      </div>
-
-      <!-- Right Column: Main Canvas -->
-      <div class="lg:col-span-2 flex flex-col gap-8">
+    <!-- Main Content Flow (Full Width) -->
+    <div class="flex flex-col gap-8">
 
     <section id="join-section" class="bg-white rounded-md shadow-md mb-8 p-6" hidden>
       <h2 class="text-xl font-bold text-gray-900 mb-2">Join this trip</h2>
@@ -622,11 +614,10 @@
 
       // Real-Time Chat using Socket.IO
       var socket = io();
-      var tripId = "{{ trip.id }}";
       var userName = document.body.getAttribute("data-user-name") || "Anonymous";
 
       socket.on('connect', function() {
-          socket.emit('join_trip', {trip_id: tripId});
+          socket.emit('join_trip', {invite_code: inviteCode});
       });
 
       socket.on('receive_message', function(data) {
@@ -659,7 +650,7 @@
           e.preventDefault();
           var msg = chatInput.value.trim();
           if (msg) {
-            socket.emit('send_message', {trip_id: tripId, user_name: userName, message: msg});
+            socket.emit('send_message', {invite_code: inviteCode, user_name: userName, message: msg});
             chatInput.value = "";
           }
         });
@@ -1118,8 +1109,12 @@
 
       if (addDescBtn && writeDescSection) {
         addDescBtn.addEventListener("click", function () {
-          if (descriptionInput) descriptionInput.value = tripDescription ? tripDescription.textContent : "";
-          writeDescSection.hidden = false;
+          if (writeDescSection.hidden) {
+            if (descriptionInput) descriptionInput.value = tripDescription ? tripDescription.textContent : "";
+            writeDescSection.hidden = false;
+          } else {
+            writeDescSection.hidden = true;
+          }
         });
       }
       if (cancelDescBtn && writeDescSection) {
@@ -1229,7 +1224,7 @@
                 if (list && list.children.length === 0) {
                   var p = document.createElement("p");
                   p.id = "collaborators-empty";
-                  p.className = "text-gray-500 italic";
+                  p.className = "text-white/50 text-sm italic mb-5 text-center py-4 bg-black/10 rounded-xl border border-white/5";
                   p.textContent = "No one has joined yet.";
                   list.parentNode.replaceChild(p, list);
                 }
@@ -1266,15 +1261,16 @@
                 if (!list && empty) {
                   var ul = document.createElement("ul");
                   ul.id = "collaborators-list";
-                  ul.className = "space-y-1 mb-4";
+                  ul.className = "space-y-1.5 mb-5 max-h-48 overflow-y-auto pr-1 custom-scrollbar";
                   empty.parentNode.replaceChild(ul, empty);
                   list = ul;
                 }
                 if (list) {
                   var li = document.createElement("li");
-                  li.className = "collaborator-item flex justify-between items-center py-1 text-gray-600";
+                  li.className = "collaborator-item flex justify-between items-center py-2 px-3 hover:bg-white/10 rounded-xl transition-colors border border-transparent";
                   li.setAttribute("data-collaborator-id", c.id);
-                  li.innerHTML = "<span>" + c.name + "</span><span class=\"font-semibold text-gray-900\">$" + parseFloat(c.budget).toFixed(2) + "</span>";
+                  var initial = c.name ? c.name.charAt(0).toUpperCase() : "U";
+                  li.innerHTML = `<div class="flex items-center gap-2"><div class="w-8 h-8 rounded-full bg-white text-roadmapper-blue flex items-center justify-center text-xs font-bold shadow-sm">${initial}</div><span class="text-sm font-medium text-white">${c.name}</span></div><span class="font-bold text-white/90 text-sm">$${parseFloat(c.budget).toFixed(2)}</span>`;
                   list.appendChild(li);
                 }
                 var countEl = document.getElementById("collaborators-count");
